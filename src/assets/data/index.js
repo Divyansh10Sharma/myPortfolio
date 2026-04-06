@@ -19,10 +19,11 @@ export const heroData = {
     tagline: "Full Stack Engineer",
     sub: "Building production systems in healthtech — AI, mobile & SaaS.",
     cta: "Explore My Work",
+    // oldPortfolio: "https://portfolio-sigma-tawny-15.vercel.app/",
     github: "https://github.com/Divyansh10Sharma",
     linkedin: "https://linkedin.com/in/divyansh-sharma",
     email: "divyansh.convivial@gmail.com",
-    resume: "#", // replace with actual resume link
+    resume: "https://drive.google.com/file/d/1f4bXueGlum8G_DEbRGuNGXXPvAsFfx8q/view?usp=sharing", // replace with actual resume link
 };
 
 // ── About ───────────────────────────────────────────────────
