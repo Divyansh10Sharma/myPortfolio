@@ -1,0 +1,253 @@
+/* ============================================================
+   GLOBAL STYLES — Cosmic Portfolio Theme
+   Fonts loaded via public/index.html <link> tag
+   ============================================================ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Base resets ─────────────────────────────────────────── */
+@layer base {
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    html {
+        scroll-behavior: smooth;
+        overflow-x: hidden;
+    }
+
+    body {
+        background-color: #050816;
+        color: #f3f4f6;
+        font-family: 'Sora', sans-serif;
+        overflow-x: hidden;
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #050816; }
+    ::-webkit-scrollbar-thumb {
+        background: linear-gradient(180deg, #915eff, #00d4ff);
+        border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(180deg, #a070ff, #30e0ff);
+    }
+
+    /* Text selection */
+    ::selection {
+        background: rgba(145, 94, 255, 0.35);
+        color: #fff;
+    }
+}
+
+/* ── Component classes ───────────────────────────────────── */
+@layer components {
+    .section-padding {
+        @apply px-6 sm:px-10 md:px-16 lg:px-24 py-16 md:py-24;
+    }
+
+    /* Gradient text — violet → cyan */
+    .gradient-text {
+        background: linear-gradient(135deg, #915eff 0%, #00d4ff 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    /* Gradient text — aurora → cyan */
+    .gradient-text-aurora {
+        background: linear-gradient(135deg, #9ebc80 0%, #00d4ff 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    /* Glass morphism card */
+    .glass-card {
+        background: rgba(13, 20, 36, 0.72);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.065);
+        box-shadow:
+            0 8px 32px rgba(0, 0, 0, 0.5),
+            0 0 0 1px rgba(255, 255, 255, 0.035);
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .glass-card:hover {
+        border-color: rgba(145, 94, 255, 0.28);
+        box-shadow:
+            0 20px 60px rgba(145, 94, 255, 0.14),
+            0 0 0 1px rgba(145, 94, 255, 0.18);
+    }
+
+    /* Primary CTA button */
+    .btn-primary {
+        @apply relative inline-flex items-center justify-center font-semibold text-white overflow-hidden transition-all duration-300 cursor-pointer;
+        background: linear-gradient(135deg, #915eff, #00d4ff);
+        box-shadow: 0 0 20px rgba(145, 94, 255, 0.4);
+    }
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0 40px rgba(145, 94, 255, 0.65);
+    }
+
+    /* Ghost button */
+    .btn-ghost {
+        @apply inline-flex items-center justify-center font-semibold transition-all duration-300 cursor-pointer;
+        border: 1px solid rgba(145, 94, 255, 0.45);
+        color: #915eff;
+        background: transparent;
+    }
+    .btn-ghost:hover {
+        background: rgba(145, 94, 255, 0.1);
+        border-color: #915eff;
+        box-shadow: 0 0 20px rgba(145, 94, 255, 0.18);
+    }
+
+    /* Section heading */
+    .section-title {
+        font-family: 'Orbitron', sans-serif;
+        font-weight: 800;
+        font-size: clamp(2rem, 4vw, 3rem);
+        line-height: 1.15;
+        background: linear-gradient(135deg, #f3f4f6 0%, #915eff 55%, #00d4ff 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .section-subtitle {
+        @apply text-gray-400 text-base md:text-lg mt-3 max-w-2xl leading-relaxed;
+        font-family: 'Sora', sans-serif;
+    }
+
+    /* Tech tag pill */
+    .tag-pill {
+        @apply px-3 py-1 rounded-full text-xs font-medium;
+        font-family: 'JetBrains Mono', monospace;
+        background: rgba(145, 94, 255, 0.12);
+        border: 1px solid rgba(145, 94, 255, 0.28);
+        color: #b898ff;
+    }
+
+    /* Glowing status dot */
+    .glow-dot {
+        @apply inline-block w-2 h-2 rounded-full flex-shrink-0;
+        background: #9ebc80;
+        box-shadow: 0 0 6px #9ebc80, 0 0 18px rgba(158, 188, 128, 0.5);
+        animation: glowPulse 2.4s ease-in-out infinite;
+    }
+}
+
+/* ── Tag text gradient helpers ───────────────────────────── */
+.blue-text-gradient {
+    background: linear-gradient(90deg, #00d4ff, #0070f3);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.green-text-gradient {
+    background: linear-gradient(90deg, #9ebc80, #00ff88);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.pink-text-gradient {
+    background: linear-gradient(90deg, #f97316, #ff6b9d);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.orange-text-gradient {
+    background: linear-gradient(90deg, #f97316, #fbbf24);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* ── Keyframes ───────────────────────────────────────────── */
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50%       { transform: translateY(-14px); }
+}
+
+@keyframes glowPulse {
+    0%, 100% { box-shadow: 0 0 6px #9ebc80, 0 0 18px rgba(158,188,128,0.5); }
+    50%       { box-shadow: 0 0 12px #9ebc80, 0 0 36px rgba(158,188,128,0.8); }
+}
+
+@keyframes spinSlow {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+@keyframes gradientShift {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes starTwinkle {
+    from { opacity: 0.15; transform: scale(0.9); }
+    to   { opacity: 0.95; transform: scale(1.2); }
+}
+
+@keyframes meteorShoot {
+    0%   { transform: translateX(0) translateY(0); opacity: 1; }
+    70%  { opacity: 0.8; }
+    100% { transform: translateX(-350px) translateY(200px); opacity: 0; }
+}
+
+@keyframes scanLine {
+    0%   { top: -2px; }
+    100% { top: 100%; }
+}
+
+/* ── Animation utility classes ───────────────────────────── */
+.animate-float      { animation: float 4s ease-in-out infinite; }
+.animate-spin-slow  { animation: spinSlow 20s linear infinite; }
+.animate-glow-pulse { animation: glowPulse 2.4s ease-in-out infinite; }
+
+/* ── Vertical Timeline overrides ─────────────────────────── */
+.vertical-timeline-element-content {
+    background: rgba(13, 20, 36, 0.88) !important;
+    border: 1px solid rgba(255, 255, 255, 0.07) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45) !important;
+    border-radius: 18px !important;
+    padding: 1.75rem !important;
+}
+
+.vertical-timeline-element-content:hover {
+    border-color: rgba(145, 94, 255, 0.25) !important;
+    box-shadow: 0 16px 50px rgba(145, 94, 255, 0.12) !important;
+}
+
+.vertical-timeline-element-content-arrow {
+    border-right-color: rgba(13, 20, 36, 0.88) !important;
+}
+
+.vertical-timeline::before {
+    background: linear-gradient(180deg, #915eff 0%, #00d4ff 100%) !important;
+    width: 2px !important;
+    left: 18px !important;
+}
+
+/* Responsive fix for timeline on desktop */
+@media (min-width: 1170px) {
+    .vertical-timeline::before {
+        left: 50% !important;
+        margin-left: -1px !important;
+    }
+}
+
+/* ── Input focus ring ────────────────────────────────────── */
+input:focus, textarea:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(145, 94, 255, 0.35);
+}
