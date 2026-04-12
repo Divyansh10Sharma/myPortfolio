@@ -59,6 +59,12 @@ const ProjectCard = ({ project, index, inView }) => {
                             {project.name[0]}
                         </div>
 
+                        {/* <image 
+                            src={'https://bmw.scene7.com/is/image/BMW/The%20New%202GC_4x3?qlt=80&wid=1024&fmt=webp'}
+                            alt=''
+                            className="h-full w-full"
+                        /> */}
+
                         {/* Featured badge */}
                         {project.featured && (
                             <div
