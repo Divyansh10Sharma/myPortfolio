@@ -1,5 +1,5 @@
 const Footer = () => (
-    <footer className="mt-[72px] border-t border-rule md:mt-section">
+    <footer className="relative z-10 mt-[72px] border-t border-rule md:mt-section">
         <div className="mx-auto flex w-full max-w-content flex-col gap-3 px-6 py-8 sm:flex-row sm:items-center sm:justify-between">
             <p className="font-mono text-xs text-graphite">
                 2026 · Built with React and Tailwind · Deployed on Vercel

@@ -12,7 +12,34 @@ Single page. React Router is kept only so unknown paths redirect to `/`
 rather than 404 — including `/rexpert`, which an earlier draft used.
 
 No animation library, no charting library. Motion is CSS transitions plus the
-IntersectionObserver API; every chart and diagram is hand-built inline SVG.
+IntersectionObserver API; every chart is hand-built inline SVG.
+
+## Motion
+
+Motion is instrumentation, not decoration — it either carries information or
+responds to input. Nothing scales, glows, or floats.
+
+- **fig. 01 is interactive.** Scrub it with the pointer (or focus it and use
+  ← / →) to read the sensor count, the reconciled count and the drift at any
+  step. A crosshair marks the position and a bar shows the gap being measured.
+- **The spine is a read-position gauge** — it fills in `--signal` down to
+  wherever you've scrolled, and the current section's tick and number light up.
+- **Stats count up** once, when they first enter view.
+- **Headings are unmasked by a clip**, so the line rises out from behind its
+  own baseline rather than fading in.
+- **Stack tokens arrive in sequence.**
+- **A sparse field drifts behind the hero** — square marks and hairline links
+  in `--graphite`/`--rule`, no colour, linking to the pointer as it moves. It
+  is hand-drawn on a 2D canvas (no library), starts only after `load` plus an
+  idle callback so it never competes with hydration, runs at 30fps and 1x
+  device pixel ratio, stops entirely once scrolled past, and is skipped below
+  768px and under reduced motion.
+- The email address can be copied with one click, and the contact line shows
+  live local time in Delhi.
+
+All of it is disabled or reduced under `prefers-reduced-motion`, where content
+is shown immediately rather than being gated on an animation. Layout shift is
+zero: the fig. 01 readout reserves its height so the chart never moves.
 
 ## Design system
 

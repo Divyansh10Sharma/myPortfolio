@@ -1,4 +1,5 @@
 import { SpineColumn } from "../components/Spine";
+import ParticleField from "../components/ParticleField";
 import useDocumentMeta from "../hooks/useDocumentMeta";
 import Hero from "../sections/Hero";
 import Overview from "../sections/Overview";
@@ -15,17 +16,22 @@ const Home = () => {
     );
 
     return (
-        <main>
-            <SpineColumn>
-                <Hero />
-                <Overview />
-                <Systems />
-                <Work />
-                <Projects />
-                <Testimonials />
-                <Contact />
-            </SpineColumn>
-        </main>
+        <>
+            <ParticleField />
+            {/* Above the field: a fixed z-0 canvas would otherwise paint over
+                static, non-positioned content. */}
+            <main className="relative z-10">
+                <SpineColumn>
+                    <Hero />
+                    <Overview />
+                    <Systems />
+                    <Work />
+                    <Projects />
+                    <Testimonials />
+                    <Contact />
+                </SpineColumn>
+            </main>
+        </>
     );
 };
 

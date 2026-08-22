@@ -1,17 +1,21 @@
 import { systems } from "../data";
 import { Section } from "../components/Spine";
 import Reveal from "../components/Reveal";
+import Heading from "../components/Heading";
 
 const StackLine = ({ stack }) => (
-    <p className="mt-5 font-mono text-xs leading-relaxed">
-        <span className="uppercase tracking-label text-graphite">Stack&nbsp;&nbsp;</span>
+    <Reveal
+        effect="stagger"
+        className="mt-5 flex flex-wrap items-baseline gap-x-2 font-mono text-xs leading-relaxed"
+    >
+        <span className="uppercase tracking-label text-graphite">Stack</span>
         {stack.map((item, i) => (
-            <span key={item}>
-                {i > 0 && <span className="text-rule"> · </span>}
-                <span className="text-ink">{item}</span>
+            <span key={item} style={{ "--n": i + 1 }} className="text-ink">
+                {i > 0 && <span className="mr-2 text-rule">·</span>}
+                {item}
             </span>
         ))}
-    </p>
+    </Reveal>
 );
 
 const SystemBlock = ({ system, isFirst }) => (
@@ -67,9 +71,7 @@ const Systems = () => (
     <Section index="02" label="SYSTEMS" id="systems">
         <div className="grid grid-cols-1 gap-x-6 md:grid-cols-12">
             <div className="md:col-span-8">
-                <Reveal as="h2" className="text-2xl text-ink md:text-3xl">
-                    Systems I own
-                </Reveal>
+                <Heading className="text-2xl text-ink md:text-3xl">Systems I own</Heading>
                 <Reveal
                     as="p"
                     delay={60}

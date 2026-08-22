@@ -1,13 +1,12 @@
 import { projects } from "../data";
 import { Section } from "../components/Spine";
 import Reveal from "../components/Reveal";
+import Heading from "../components/Heading";
 import { ArrowUpRight } from "../components/Icons";
 
 const Projects = () => (
     <Section index="04" label="PROJECTS" id="projects">
-        <Reveal as="h2" className="text-2xl text-ink md:text-3xl">
-            Side projects
-        </Reveal>
+        <Heading className="text-2xl text-ink md:text-3xl">Side projects</Heading>
 
         <div className="mt-12">
             {projects.map((project, i) => (
