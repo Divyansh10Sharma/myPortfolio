@@ -1,14 +1,34 @@
 /* ============================================================
-   GLOBAL STYLES — Cosmic Portfolio Theme
-   Fonts loaded via public/index.html <link> tag
+   Spec-sheet design system.
+   Self-hosted faces — no CDN request on the critical path.
    ============================================================ */
+
+/* Latin subsets only — the site has no Cyrillic, Greek or Vietnamese
+   content, and shipping those @font-face blocks only inflates the
+   render-blocking stylesheet. */
+@import "@fontsource/archivo/latin-600.css";
+@import "@fontsource/archivo/latin-700.css";
+@import "@fontsource/ibm-plex-mono/latin-400.css";
+@import "@fontsource/ibm-plex-mono/latin-500.css";
+@import "@fontsource/ibm-plex-sans/latin-400.css";
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ── Base resets ─────────────────────────────────────────── */
 @layer base {
+    :root {
+        --paper: #e9ebed;
+        --ink: #14171c;
+        --graphite: #5a626d;
+        --rule: #c6cbd1;
+        --signal: #1b36e8;
+        --warn: #b4741a;
+        /* Darkened warn, used only where a warn-coloured *label* must
+           clear 4.5:1 on paper. The data stroke itself stays --warn. */
+        --warn-ink: #8f5a10;
+    }
+
     * {
         margin: 0;
         padding: 0;
@@ -17,237 +37,190 @@
 
     html {
         scroll-behavior: smooth;
-        overflow-x: hidden;
+        /* Sticky nav is 57px; keep anchored sections clear of it. */
+        scroll-padding-top: 5.5rem;
+        -webkit-text-size-adjust: 100%;
     }
 
     body {
-        background-color: #050816;
-        color: #f3f4f6;
-        font-family: 'Sora', sans-serif;
-        overflow-x: hidden;
+        background-color: var(--paper);
+        color: var(--ink);
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 1rem;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
     }
 
-    /* Custom scrollbar */
-    ::-webkit-scrollbar { width: 5px; }
-    ::-webkit-scrollbar-track { background: #050816; }
+    h1,
+    h2,
+    h3,
+    h4 {
+        font-family: Archivo, system-ui, sans-serif;
+        font-weight: 700;
+        line-height: 1.1;
+        letter-spacing: -0.02em;
+    }
+
+    ::selection {
+        background: var(--signal);
+        color: var(--paper);
+    }
+
+    /* Every interactive element gets a visible ring, in --signal. */
+    :focus-visible {
+        outline: 2px solid var(--signal);
+        outline-offset: 3px;
+        border-radius: 1px;
+    }
+
+    ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+    ::-webkit-scrollbar-track {
+        background: var(--paper);
+    }
     ::-webkit-scrollbar-thumb {
-        background: linear-gradient(180deg, #915eff, #00d4ff);
-        border-radius: 3px;
+        background: var(--rule);
+        border: 3px solid var(--paper);
     }
     ::-webkit-scrollbar-thumb:hover {
-        background: linear-gradient(180deg, #a070ff, #30e0ff);
-    }
-
-    /* Text selection */
-    ::selection {
-        background: rgba(145, 94, 255, 0.35);
-        color: #fff;
+        background: var(--graphite);
     }
 }
 
-/* ── Component classes ───────────────────────────────────── */
 @layer components {
-    .section-padding {
-        @apply px-6 sm:px-10 md:px-16 lg:px-24 py-16 md:py-24;
+    /* ── Mono annotation label ─────────────────────────────── */
+    .label {
+        @apply font-mono text-xs uppercase text-graphite;
+        letter-spacing: 0.08em;
     }
 
-    /* Gradient text — violet → cyan */
-    .gradient-text {
-        background: linear-gradient(135deg, #915eff 0%, #00d4ff 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+    /* ── Underline that draws left-to-right ────────────────── */
+    .link {
+        position: relative;
+        display: inline-block;
+        text-decoration: none;
+    }
+    .link::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: -2px;
+        height: 1px;
+        background: currentColor;
+        transform: scaleX(0);
+        transform-origin: left center;
+        transition: transform 180ms ease-out;
+    }
+    .link:hover::after,
+    .link:focus-visible::after {
+        transform: scaleX(1);
     }
 
-    /* Gradient text — aurora → cyan */
-    .gradient-text-aurora {
-        background: linear-gradient(135deg, #9ebc80 0%, #00d4ff 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+    /* Inverse: rule is present, retracts on hover. Used for links that
+       are already obviously links (the big email address). */
+    .link-out::after {
+        transform: scaleX(1);
     }
-
-    /* Glass morphism card */
-    .glass-card {
-        background: rgba(13, 20, 36, 0.72);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.065);
-        box-shadow:
-            0 8px 32px rgba(0, 0, 0, 0.5),
-            0 0 0 1px rgba(255, 255, 255, 0.035);
-        transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .glass-card:hover {
-        border-color: rgba(145, 94, 255, 0.28);
-        box-shadow:
-            0 20px 60px rgba(145, 94, 255, 0.14),
-            0 0 0 1px rgba(145, 94, 255, 0.18);
-    }
-
-    /* Primary CTA button */
-    .btn-primary {
-        @apply relative inline-flex items-center justify-center font-semibold text-white overflow-hidden transition-all duration-300 cursor-pointer;
-        background: linear-gradient(135deg, #915eff, #00d4ff);
-        box-shadow: 0 0 20px rgba(145, 94, 255, 0.4);
-    }
-    .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 0 40px rgba(145, 94, 255, 0.65);
-    }
-
-    /* Ghost button */
-    .btn-ghost {
-        @apply inline-flex items-center justify-center font-semibold transition-all duration-300 cursor-pointer;
-        border: 1px solid rgba(145, 94, 255, 0.45);
-        color: #915eff;
-        background: transparent;
-    }
-    .btn-ghost:hover {
-        background: rgba(145, 94, 255, 0.1);
-        border-color: #915eff;
-        box-shadow: 0 0 20px rgba(145, 94, 255, 0.18);
-    }
-
-    /* Section heading */
-    .section-title {
-        font-family: 'Orbitron', sans-serif;
-        font-weight: 800;
-        font-size: clamp(2rem, 4vw, 3rem);
-        line-height: 1.15;
-        background: linear-gradient(135deg, #f3f4f6 0%, #915eff 55%, #00d4ff 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }
-
-    .section-subtitle {
-        @apply text-gray-400 text-base md:text-lg mt-3 max-w-2xl leading-relaxed;
-        font-family: 'Sora', sans-serif;
-    }
-
-    /* Tech tag pill */
-    .tag-pill {
-        @apply px-3 py-1 rounded-full text-xs font-medium;
-        font-family: 'JetBrains Mono', monospace;
-        background: rgba(145, 94, 255, 0.12);
-        border: 1px solid rgba(145, 94, 255, 0.28);
-        color: #b898ff;
-    }
-
-    /* Glowing status dot */
-    .glow-dot {
-        @apply inline-block w-2 h-2 rounded-full flex-shrink-0;
-        background: #9ebc80;
-        box-shadow: 0 0 6px #9ebc80, 0 0 18px rgba(158, 188, 128, 0.5);
-        animation: glowPulse 2.4s ease-in-out infinite;
+    .link-out:hover::after,
+    .link-out:focus-visible::after {
+        transform: scaleX(0);
+        transform-origin: right center;
     }
 }
 
-/* ── Tag text gradient helpers ───────────────────────────── */
-.blue-text-gradient {
-    background: linear-gradient(90deg, #00d4ff, #0070f3);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-.green-text-gradient {
-    background: linear-gradient(90deg, #9ebc80, #00ff88);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-.pink-text-gradient {
-    background: linear-gradient(90deg, #f97316, #ff6b9d);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-.orange-text-gradient {
-    background: linear-gradient(90deg, #f97316, #fbbf24);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
+@layer utilities {
+    /* ── Scroll reveal — toggled by IntersectionObserver ────── */
+    .reveal {
+        opacity: 0;
+        transform: translateY(24px);
+        transition:
+            opacity 300ms ease-out,
+            transform 300ms ease-out;
+        transition-delay: var(--reveal-delay, 0ms);
+    }
+    .reveal.is-visible {
+        opacity: 1;
+        transform: none;
+    }
 
-/* ── Keyframes ───────────────────────────────────────────── */
-@keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50%       { transform: translateY(-14px); }
-}
+    /* ── Page-load sequence — 400ms, 60ms stagger, once ─────── */
+    .load-in {
+        opacity: 0;
+        animation: load-in 400ms ease-out forwards;
+        animation-delay: calc(var(--i, 0) * 60ms);
+    }
 
-@keyframes glowPulse {
-    0%, 100% { box-shadow: 0 0 6px #9ebc80, 0 0 18px rgba(158,188,128,0.5); }
-    50%       { box-shadow: 0 0 12px #9ebc80, 0 0 36px rgba(158,188,128,0.8); }
-}
+    @keyframes load-in {
+        from {
+            opacity: 0;
+            transform: translateY(16px);
+        }
+        to {
+            opacity: 1;
+            transform: none;
+        }
+    }
 
-@keyframes spinSlow {
-    from { transform: rotate(0deg); }
-    to   { transform: rotate(360deg); }
-}
+    /* ── SVG path draw — 1.2s, once ─────────────────────────── */
+    .draw {
+        stroke-dasharray: var(--len);
+        stroke-dashoffset: var(--len);
+        animation: draw 1200ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        animation-delay: var(--draw-delay, 0ms);
+    }
 
-@keyframes gradientShift {
-    0%   { background-position: 0% 50%; }
-    50%  { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
+    @keyframes draw {
+        to {
+            stroke-dashoffset: 0;
+        }
+    }
 
-@keyframes starTwinkle {
-    from { opacity: 0.15; transform: scale(0.9); }
-    to   { opacity: 0.95; transform: scale(1.2); }
-}
+    .fade-in-late {
+        opacity: 0;
+        animation: fade-in 400ms ease-out forwards;
+        animation-delay: var(--draw-delay, 900ms);
+    }
 
-@keyframes meteorShoot {
-    0%   { transform: translateX(0) translateY(0); opacity: 1; }
-    70%  { opacity: 0.8; }
-    100% { transform: translateX(-350px) translateY(200px); opacity: 0; }
-}
-
-@keyframes scanLine {
-    0%   { top: -2px; }
-    100% { top: 100%; }
-}
-
-/* ── Animation utility classes ───────────────────────────── */
-.animate-float      { animation: float 4s ease-in-out infinite; }
-.animate-spin-slow  { animation: spinSlow 20s linear infinite; }
-.animate-glow-pulse { animation: glowPulse 2.4s ease-in-out infinite; }
-
-/* ── Vertical Timeline overrides ─────────────────────────── */
-.vertical-timeline-element-content {
-    background: rgba(13, 20, 36, 0.88) !important;
-    border: 1px solid rgba(255, 255, 255, 0.07) !important;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45) !important;
-    border-radius: 18px !important;
-    padding: 1.75rem !important;
-}
-
-.vertical-timeline-element-content:hover {
-    border-color: rgba(145, 94, 255, 0.25) !important;
-    box-shadow: 0 16px 50px rgba(145, 94, 255, 0.12) !important;
-}
-
-.vertical-timeline-element-content-arrow {
-    border-right-color: rgba(13, 20, 36, 0.88) !important;
-}
-
-.vertical-timeline::before {
-    background: linear-gradient(180deg, #915eff 0%, #00d4ff 100%) !important;
-    width: 2px !important;
-    left: 18px !important;
-}
-
-/* Responsive fix for timeline on desktop */
-@media (min-width: 1170px) {
-    .vertical-timeline::before {
-        left: 50% !important;
-        margin-left: -1px !important;
+    @keyframes fade-in {
+        to {
+            opacity: 1;
+        }
     }
 }
 
-/* ── Input focus ring ────────────────────────────────────── */
-input:focus, textarea:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(145, 94, 255, 0.35);
+/* ── Reduced motion: kill transforms and draws, keep opacity ── */
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    .reveal {
+        transform: none;
+        transition: opacity 300ms ease-out;
+    }
+
+    .load-in {
+        animation: fade-in 200ms ease-out forwards;
+    }
+
+    .draw {
+        stroke-dasharray: none;
+        stroke-dashoffset: 0;
+        animation: none;
+    }
+
+    .fade-in-late {
+        animation: fade-in 200ms ease-out forwards;
+        animation-delay: 0ms;
+    }
+
+    /* The only other transform on the site: the underline wipe. */
+    .link::after,
+    .link-out::after {
+        transition: none;
+    }
 }

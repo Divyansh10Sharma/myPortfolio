@@ -1,27 +1,30 @@
-// ============================================================
-// Home.jsx — Main page, stitches all sections together
-// ============================================================
-
-import Hero         from "../components/sections/Hero";
-import About        from "../components/sections/About";
-import Experience   from "../components/sections/Experience";
-import Skills       from "../components/sections/Skills";
-import Projects     from "../components/sections/Projects";
-import Testimonials from "../components/sections/Testimonials";
-import Contact      from "../components/sections/Contact";
-import Footer       from "../components/layout/Footer";
+import { SpineColumn } from "../components/Spine";
+import useDocumentMeta from "../hooks/useDocumentMeta";
+import Hero from "../sections/Hero";
+import Overview from "../sections/Overview";
+import Systems from "../sections/Systems";
+import Work from "../sections/Work";
+import Projects from "../sections/Projects";
+import Testimonials from "../sections/Testimonials";
+import Contact from "../sections/Contact";
 
 const Home = () => {
+    useDocumentMeta(
+        "Divyansh Sharma — Backend & AI Engineer",
+        "Backend and AI engineer building production systems in healthtech: an AI coaching engine with Pinecone RAG and deterministic risk modelling, a hand-written asyncio WebSocket layer, and an in-flight Firestore-to-PostgreSQL migration."
+    );
+
     return (
-        <main className="relative z-10">
-            <Hero         />
-            <About        />
-            <Experience   />
-            <Skills       />
-            <Projects     />
-            <Testimonials />
-            <Contact      />
-            <Footer       />
+        <main>
+            <SpineColumn>
+                <Hero />
+                <Overview />
+                <Systems />
+                <Work />
+                <Projects />
+                <Testimonials />
+                <Contact />
+            </SpineColumn>
         </main>
     );
 };

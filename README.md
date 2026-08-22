@@ -1,171 +1,82 @@
-# 🚀 Divyansh Sharma — Portfolio
+# Divyansh Sharma — Portfolio
 
-**Cosmic-themed Full Stack Engineer portfolio** built with React, Vite, Tailwind CSS, and Framer Motion.
+Backend & AI engineer portfolio, built as an **engineering spec sheet**: light,
+precise, hairline-ruled, dense with real information. No dark-neon theme, no
+glow, no decorative gradients.
 
----
+## Stack
 
-## ✨ Features
+React 18 · Vite · Tailwind · React Router · deployed on Vercel.
 
-- **Cosmic theme** — animated star field, nebula glows, meteor showers, glassmorphism cards
-- **Smooth animations** — Framer Motion entrance animations, scroll-triggered reveals, staggered children
-- **Mobile responsive** — fully responsive across all breakpoints
-- **Separate project detail routes** — `/project/:id` with full detail view
-- **Vertical timeline** — experience section with role cards and tech tags
-- **Tilt project cards** — parallax tilt on hover with glare effect
-- **Typewriter hero** — animated role cycling with `react-type-animation`
-- **Contact form** — EmailJS powered, no backend needed
-- **Loading screen** — cosmic orbit animation on first paint
-- **404 page** — space-themed not found page
-- **SEO ready** — meta tags, OG tags, Twitter card
+No animation library, no charting library. Motion is CSS transitions plus the
+IntersectionObserver API; every chart and diagram is hand-built inline SVG.
 
----
+## Design system
 
-## 🗂️ Project Structure
+Defined once as CSS custom properties in [`src/index.css`](src/index.css) and
+mapped into Tailwind's theme in [`tailwind.config.js`](tailwind.config.js).
+Tailwind's default palette is **replaced**, not extended, so `slate-800` or
+`blue-500` cannot be used by accident.
+
+| Token       | Value     | Use                                          |
+| ----------- | --------- | -------------------------------------------- |
+| `--paper`   | `#E9EBED` | Page background                              |
+| `--ink`     | `#14171C` | Primary text                                 |
+| `--graphite`| `#5A626D` | Secondary text, labels, annotations           |
+| `--rule`    | `#C6CBD1` | Hairlines, gridlines, borders                 |
+| `--signal`  | `#1B36E8` | The single accent: links, active states       |
+| `--warn`    | `#B4741A` | Data marks in figures only — never UI chrome  |
+
+Type: **Archivo** (headings, 600/700) and **IBM Plex Mono** (the workhorse —
+labels, data, nav, captions), with **IBM Plex Sans** for long prose. All three
+are self-hosted via `@fontsource`, latin subsets only.
+
+Contrast on `--paper`: graphite 5.16:1, signal 6.41:1, ink 15.03:1 — all clear
+WCAG AA.
+
+## Structure
 
 ```
 src/
-├── assets/
-│   └── data/index.js          ← ALL your content lives here
-├── components/
-│   ├── layout/
-│   │   ├── Navbar.jsx
-│   │   └── Footer.jsx
-│   ├── sections/
-│   │   ├── Hero.jsx
-│   │   ├── About.jsx
-│   │   ├── Experience.jsx
-│   │   ├── Skills.jsx
-│   │   ├── Projects.jsx
-│   │   ├── Testimonials.jsx
-│   │   └── Contact.jsx
-│   └── ui/
-│       ├── StarField.jsx
-│       ├── Loader.jsx
-│       ├── ScrollToTop.jsx
-│       └── SectionWrapper.jsx
-├── hooks/
-│   └── useScrollAnimation.js
-├── pages/
-│   ├── Home.jsx
-│   ├── ProjectDetail.jsx
-│   └── NotFound.jsx
-├── App.jsx
-├── main.jsx
-└── index.css
+  components/         Nav, Footer, Spine, Reveal, Icons
+    TelemetryStrip    Hero figure — step-sensor reconciliation (fig. 01)
+    DiagramParts      Shared SVG primitives for the case-study figures
+    DiagramRequestFlow  fig. 02 — request flow + model context boundary
+    DiagramAgentLoop    fig. 03 — the closed agent loop
+  sections/           Homepage sections, one file each
+  pages/              Home, Rexpert (case study)
+  data/index.js       All copy and content — edit here, not in components
 ```
 
----
+Content lives in [`src/data/index.js`](src/data/index.js). The section spine,
+its numbering and its tick marks come from
+[`src/components/Spine.jsx`](src/components/Spine.jsx).
 
-## 🛠️ Setup
-
-### 1. Clone and install
+## Develop
 
 ```bash
-git clone https://github.com/Divyansh10Sharma/portfolio.git
-cd portfolio
 npm install
+npm run dev      # http://localhost:3000
+npm run build
+npm run preview
 ```
 
-### 2. Set up EmailJS (contact form)
+## Deploy notes
 
-1. Create a free account at [emailjs.com](https://emailjs.com)
-2. Create a service (Gmail recommended)
-3. Create an email template with variables: `{{name}}`, `{{email}}`, `{{message}}`
-4. Copy your credentials:
+`SITE_URL` controls the absolute URLs used by `rel=canonical` and Open Graph.
+On Vercel it is derived automatically from `VERCEL_PROJECT_PRODUCTION_URL`; set
+`SITE_URL` explicitly to pin a custom domain. When neither is set (local
+builds), the canonical tag is omitted rather than emitted as a relative URL.
 
-```bash
-cp .env.example .env
-```
+The social card at `public/og.png` was rendered from the site's own type and
+palette at 1200×630.
 
-Edit `.env`:
-```
-VITE_EMAILJS_SERVICE_ID=service_xxxxxxx
-VITE_EMAILJS_TEMPLATE_ID=template_xxxxxxx
-VITE_EMAILJS_PUBLIC_KEY=xxxxxxxxxxxx
-```
+## Quality floor
 
-### 3. Customize your data
+Verified on the production build with Lighthouse (both routes):
+performance 98, accessibility 100, best practices 100, SEO 100.
 
-Edit `src/assets/data/index.js`:
-- Update `heroData` with your name, links, resume URL
-- Add/edit `experiences`, `projects`, `testimonials`, `skillCategories`
-- Add project images: import them at the top and set `image: yourImage`
-
-### 4. Add project screenshots (optional but recommended)
-
-```js
-// In src/assets/data/index.js
-import threadImg from "../images/thread.png";
-
-// Then in the project object:
-image: threadImg,
-```
-
-### 5. Run locally
-
-```bash
-npm run dev    # → http://localhost:3000
-```
-
----
-
-## 🚀 Deploy to Vercel
-
-```bash
-# Push to GitHub
-git add .
-git commit -m "feat: portfolio"
-git push origin main
-```
-
-Then:
-1. Go to [vercel.com](https://vercel.com) → **New Project**
-2. Import your GitHub repo
-3. Framework: **Vite**
-4. Build command: `npm run build`
-5. Output directory: `dist`
-6. Add environment variables (from your `.env`) in the Vercel dashboard
-7. Deploy 🎉
-
-The `vercel.json` file at root handles SPA routing so `/project/:id` works on refresh.
-
----
-
-## 🎨 Customization
-
-### Colors (edit `tailwind.config.js`)
-```js
-cosmic: {
-    nebula:  "#915eff",   // Violet — primary accent
-    star:    "#00d4ff",   // Cyan — secondary accent
-    aurora:  "#9ebc80",   // Green — Train Rex brand color
-    comet:   "#f97316",   // Orange — highlights
-}
-```
-
-### Fonts (loaded via `index.html`)
-- **Display**: Orbitron (headings, logo)
-- **Body**: Sora (paragraphs, labels)
-- **Mono**: JetBrains Mono (tags, code, dates)
-
-### Add a new section
-1. Create `src/components/sections/MySection.jsx`
-2. Add its id to `navLinks` in `data/index.js`
-3. Import and add it to `src/pages/Home.jsx`
-
----
-
-## 📦 Tech Stack
-
-| Layer       | Tech                                      |
-|-------------|-------------------------------------------|
-| Framework   | React 18 + Vite 5                         |
-| Styling     | Tailwind CSS 3                            |
-| Animations  | Framer Motion 11                          |
-| Routing     | React Router DOM 6                        |
-| Timeline    | react-vertical-timeline-component         |
-| Tilt cards  | react-parallax-tilt                       |
-| Typewriter  | react-type-animation                      |
-| Contact     | emailjs-com                               |
-| Icons       | react-icons                               |
-| Hosting     | Vercel                                    |
+Also verified: no horizontal overflow at 375px, wide figures scroll rather than
+squash, visible `--signal` focus rings on every interactive element, a working
+skip link, one `h1` per page, and `prefers-reduced-motion` fully respected —
+transforms and SVG draw animations disabled, opacity preserved.

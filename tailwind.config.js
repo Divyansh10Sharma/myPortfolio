@@ -1,57 +1,59 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-    content: [
-        "./src/**/*.{js,jsx,ts,tsx}",
-        "./public/index.html",
-    ],
+    content: ["./index.html", "./src/**/*.{js,jsx}"],
     theme: {
+        // Palette is REPLACED, not extended — Tailwind's default colors are
+        // removed so `slate-800` / `blue-500` cannot be used by accident.
+        colors: {
+            transparent: "transparent",
+            current: "currentColor",
+            paper: "var(--paper)",
+            ink: "var(--ink)",
+            graphite: "var(--graphite)",
+            rule: "var(--rule)",
+            signal: "var(--signal)",
+            warn: "var(--warn)",
+            "warn-ink": "var(--warn-ink)",
+        },
+        fontFamily: {
+            display: ["Archivo", "system-ui", "sans-serif"],
+            mono: ["'IBM Plex Mono'", "ui-monospace", "monospace"],
+            sans: ["'IBM Plex Sans'", "system-ui", "sans-serif"],
+        },
+        fontSize: {
+            xs: ["0.75rem", { lineHeight: "1.5" }],
+            sm: ["0.875rem", { lineHeight: "1.6" }],
+            base: ["1rem", { lineHeight: "1.6" }],
+            lg: ["1.25rem", { lineHeight: "1.5" }],
+            xl: ["1.5rem", { lineHeight: "1.25" }],
+            "2xl": ["2rem", { lineHeight: "1.15" }],
+            "3xl": ["3rem", { lineHeight: "1.1" }],
+            "4xl": ["4.5rem", { lineHeight: "1.05" }],
+        },
+        borderRadius: {
+            none: "0",
+            DEFAULT: "2px",
+            sm: "1px",
+            full: "9999px",
+        },
+        boxShadow: {
+            none: "none",
+        },
         extend: {
-            fontFamily: {
-                display: ["'Orbitron'",      "sans-serif"],
-                body:    ["'Sora'",           "sans-serif"],
-                mono:    ["'JetBrains Mono'", "monospace"],
+            maxWidth: {
+                content: "1280px",
+                measure: "68ch",
+                short: "60ch",
             },
-            colors: {
-                cosmic: {
-                    bg:      "#050816",
-                    surface: "#0d1424",
-                    card:    "#111827",
-                    nebula:  "#915eff",
-                    star:    "#00d4ff",
-                    aurora:  "#9ebc80",
-                    comet:   "#f97316",
-                    white:   "#f3f4f6",
-                    muted:   "#8892b0",
-                    dim:     "#4a5568",
-                },
+            letterSpacing: {
+                tight: "-0.02em",
+                label: "0.08em",
             },
-            animation: {
-                "float":      "float 4s ease-in-out infinite",
-                "spin-slow":  "spinSlow 20s linear infinite",
-                "glow-pulse": "glowPulse 2.4s ease-in-out infinite",
-            },
-            keyframes: {
-                float: {
-                    "0%, 100%": { transform: "translateY(0px)" },
-                    "50%":      { transform: "translateY(-14px)" },
-                },
-                spinSlow: {
-                    from: { transform: "rotate(0deg)" },
-                    to:   { transform: "rotate(360deg)" },
-                },
-                glowPulse: {
-                    "0%, 100%": { boxShadow: "0 0 6px #9ebc80, 0 0 18px rgba(158,188,128,0.5)" },
-                    "50%":      { boxShadow: "0 0 12px #9ebc80, 0 0 36px rgba(158,188,128,0.8)" },
-                },
-            },
-            backgroundImage: {
-                "cosmic-gradient": "linear-gradient(135deg, #050816 0%, #0d1424 50%, #0a0f1e 100%)",
-            },
-            boxShadow: {
-                "nebula":     "0 0 40px rgba(145, 94, 255, 0.25), 0 0 80px rgba(145, 94, 255, 0.1)",
-                "star":       "0 0 30px rgba(0, 212, 255, 0.3)",
-                "card":       "0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05)",
-                "card-hover": "0 20px 60px rgba(145,94,255,0.2), 0 0 0 1px rgba(145,94,255,0.3)",
+            spacing: {
+                // Wide enough for the longest section label ("TESTIMONIALS")
+                // to clear the content column.
+                spine: "8.75rem",
+                section: "7.5rem",
             },
         },
     },
