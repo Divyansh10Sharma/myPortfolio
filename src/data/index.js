@@ -18,7 +18,7 @@ export const profile = {
     resume:
         "https://drive.google.com/file/d/1f4bXueGlum8G_DEbRGuNGXXPvAsFfx8q/view?usp=sharing",
     intro:
-        "I build production systems in healthtech — an AI coaching engine with RAG and deterministic risk modelling, a custom real-time messaging layer, and an in-flight Firestore-to-PostgreSQL migration. Two years, five codebases, real users.",
+        "I build production systems in healthtech — AI features, a custom real-time messaging layer, native health-sensor integration, and an in-flight Firestore-to-PostgreSQL migration. Two years, five codebases, real users.",
 };
 
 export const navLinks = [
@@ -31,7 +31,7 @@ export const navLinks = [
 
 export const stats = [
     { value: "5K+", label: "app downloads" },
-    { value: "500", label: "users per agent run" },
+    { value: "5", label: "production codebases owned" },
     { value: "80+", label: "gym partners automated" },
     { value: "120%", label: "organic MAU growth" },
 ];
@@ -58,11 +58,12 @@ export const systems = [
         id: "rexpert",
         index: "S-01",
         name: "Rexpert",
-        subtitle: "AI coaching engine",
-        body: "A closed-loop behavioural coaching system. Pinecone RAG across four namespaces with cohort-enriched query embedding, five rule-triggered agents dispatched through a job queue, and a deterministic dropout-risk model computed in Python and deliberately never exposed to the LLM — so the system's most sensitive signal cannot be hallucinated or leaked. Parallelised across 500 users.",
-        stack: ["Pinecone", "Claude", "OpenAI", "Flask", "PostgreSQL", "Firestore"],
-        href: "/rexpert",
-        hrefLabel: "Read the full case study",
+        subtitle: "AI coaching system",
+        // Design and mechanics are under NDA — deliberately described at
+        // capability level only. Do not add implementation detail here.
+        body: "An AI-assisted coaching system running on the same Flask and PostgreSQL backend, which I owned end to end from design through rollout. The architecture is covered by my employer's confidentiality agreement, so it isn't written up here — I'm glad to talk through the engineering trade-offs in conversation.",
+        stack: ["Python", "Flask", "PostgreSQL", "OpenAI", "Claude", "Pinecone"],
+        confidential: true,
         span: "wide",
     },
     {

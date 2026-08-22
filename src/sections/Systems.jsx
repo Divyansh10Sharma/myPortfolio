@@ -1,8 +1,6 @@
-import { Link } from "react-router-dom";
 import { systems } from "../data";
 import { Section } from "../components/Spine";
 import Reveal from "../components/Reveal";
-import { ArrowRight } from "../components/Icons";
 
 const StackLine = ({ stack }) => (
     <p className="mt-5 font-mono text-xs leading-relaxed">
@@ -47,14 +45,10 @@ const SystemBlock = ({ system, isFirst }) => (
 
             <StackLine stack={system.stack} />
 
-            {system.href && (
-                <Link
-                    to={system.href}
-                    className="link mt-5 inline-flex items-center gap-2 font-mono text-sm text-signal"
-                >
-                    {system.hrefLabel}
-                    <ArrowRight size={13} />
-                </Link>
+            {system.confidential && (
+                <p className="mt-5 border-l border-rule pl-4 font-mono text-xs text-graphite">
+                    Details withheld under NDA
+                </p>
             )}
 
             {system.figure === "telemetry" && (
@@ -81,8 +75,8 @@ const Systems = () => (
                     delay={60}
                     className="mt-5 max-w-measure font-sans text-base text-graphite"
                 >
-                    Six production systems at Train Rex, each shipped end-to-end. The
-                    common thread is keeping the deterministic parts deterministic.
+                    Six production systems at Train Rex, each shipped end-to-end —
+                    backend, mobile, and the infrastructure in between.
                 </Reveal>
             </div>
         </div>

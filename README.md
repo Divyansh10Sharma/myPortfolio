@@ -8,6 +8,9 @@ glow, no decorative gradients.
 
 React 18 · Vite · Tailwind · React Router · deployed on Vercel.
 
+Single page. React Router is kept only so unknown paths redirect to `/`
+rather than 404 — including `/rexpert`, which an earlier draft used.
+
 No animation library, no charting library. Motion is CSS transitions plus the
 IntersectionObserver API; every chart and diagram is hand-built inline SVG.
 
@@ -39,18 +42,26 @@ WCAG AA.
 ```
 src/
   components/         Nav, Footer, Spine, Reveal, Icons
-    TelemetryStrip    Hero figure — step-sensor reconciliation (fig. 01)
-    DiagramParts      Shared SVG primitives for the case-study figures
-    DiagramRequestFlow  fig. 02 — request flow + model context boundary
-    DiagramAgentLoop    fig. 03 — the closed agent loop
+    TelemetryStrip    Hero figure — step-sensor drift (fig. 01)
   sections/           Homepage sections, one file each
-  pages/              Home, Rexpert (case study)
+  pages/Home.jsx      The single page
   data/index.js       All copy and content — edit here, not in components
 ```
 
 Content lives in [`src/data/index.js`](src/data/index.js). The section spine,
 its numbering and its tick marks come from
 [`src/components/Spine.jsx`](src/components/Spine.jsx).
+
+## Confidentiality
+
+The Rexpert entry is deliberately described at capability level only — its
+design is under NDA, and the entry carries a visible "Details withheld under
+NDA" marker. **Do not add implementation detail to it.** There is a comment to
+that effect in `src/data/index.js`.
+
+The other Train Rex entries still describe their internals in some depth. If
+your employer would consider any of that sensitive, dial those back the same
+way.
 
 ## Develop
 
@@ -73,7 +84,7 @@ palette at 1200×630.
 
 ## Quality floor
 
-Verified on the production build with Lighthouse (both routes):
+Verified on the production build with Lighthouse:
 performance 98, accessibility 100, best practices 100, SEO 100.
 
 Also verified: no horizontal overflow at 375px, wide figures scroll rather than

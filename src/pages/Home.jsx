@@ -11,7 +11,7 @@ import Contact from "../sections/Contact";
 const Home = () => {
     useDocumentMeta(
         "Divyansh Sharma — Backend & AI Engineer",
-        "Backend and AI engineer building production systems in healthtech: an AI coaching engine with Pinecone RAG and deterministic risk modelling, a hand-written asyncio WebSocket layer, and an in-flight Firestore-to-PostgreSQL migration."
+        "Backend and AI engineer building production systems in healthtech: AI features, a hand-written asyncio WebSocket layer, native health-sensor integration, and an in-flight Firestore-to-PostgreSQL migration."
     );
 
     return (

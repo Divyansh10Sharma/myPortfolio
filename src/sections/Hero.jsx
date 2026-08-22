@@ -1,7 +1,6 @@
-import { Link } from "react-router-dom";
 import { profile, stats } from "../data";
 import TelemetryStrip from "../components/TelemetryStrip";
-import { ArrowRight, ArrowUpRight } from "../components/Icons";
+import { ArrowDown, ArrowUpRight } from "../components/Icons";
 
 const Hero = () => (
     <section id="top" className="pt-14 md:pt-20">
@@ -29,13 +28,13 @@ const Hero = () => (
         </p>
 
         <div className="load-in mt-8 flex flex-wrap gap-3" style={{ "--i": 4 }}>
-            <Link
-                to="/rexpert"
+            <a
+                href="#systems"
                 className="inline-flex items-center gap-2 rounded bg-signal px-5 py-3 font-mono text-sm text-paper transition-colors duration-150 hover:bg-ink"
             >
-                Read the Rexpert case study
-                <ArrowRight size={14} />
-            </Link>
+                See the systems I've built
+                <ArrowDown size={14} />
+            </a>
             <a
                 href={profile.resume}
                 target="_blank"
