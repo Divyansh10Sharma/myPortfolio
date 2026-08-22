@@ -1,6 +1,8 @@
+import { useEffect, useState } from "react";
 import { profile } from "../data";
 import { Section } from "../components/Spine";
 import Reveal from "../components/Reveal";
+import Heading from "../components/Heading";
 import { Github, Linkedin, Document, ArrowUpRight } from "../components/Icons";
 
 const links = [
@@ -9,11 +11,48 @@ const links = [
     { href: profile.resume, label: "Resume (PDF)", Icon: Document },
 ];
 
-const Contact = () => (
+/** Live local time — tells a remote recruiter the overlap at a glance. */
+const LocalTime = () => {
+    const format = () =>
+        new Intl.DateTimeFormat("en-GB", {
+            hour: "2-digit",
+            minute: "2-digit",
+            timeZone: "Asia/Kolkata",
+        }).format(new Date());
+
+    const [now, setNow] = useState(format);
+
+    useEffect(() => {
+        const id = setInterval(() => setNow(format()), 20000);
+        return () => clearInterval(id);
+    }, []);
+
+    return (
+        <span className="tabular-nums">
+            {now} local
+        </span>
+    );
+};
+
+const Contact = () => {
+    const [copied, setCopied] = useState(false);
+
+    const copyEmail = async () => {
+        try {
+            await navigator.clipboard.writeText(profile.email);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 1800);
+        } catch {
+            // Clipboard blocked (insecure context, permissions) — the mailto
+            // link beside it still works, so fail quietly.
+        }
+    };
+
+    return (
     <Section index="06" label="CONTACT" id="contact">
-        <Reveal as="h2" className="max-w-measure text-2xl text-ink md:text-3xl">
+        <Heading className="max-w-measure text-2xl text-ink md:text-3xl">
             Open to backend and AI engineering roles
-        </Reveal>
+        </Heading>
 
         <Reveal delay={60} className="mt-10 border-t border-rule pt-8">
             <a
@@ -24,12 +63,33 @@ const Contact = () => (
                 {profile.email}
             </a>
 
+            <div className="mt-4">
+                <button
+                    type="button"
+                    onClick={copyEmail}
+                    className="inline-flex items-center gap-2 rounded border border-rule px-3 py-1.5 font-mono text-xs text-graphite transition-colors duration-150 hover:border-ink hover:text-ink"
+                >
+                    <span
+                        aria-hidden="true"
+                        className={`inline-block h-1.5 w-1.5 transition-colors duration-200 ${
+                            copied ? "bg-signal" : "bg-rule"
+                        }`}
+                    />
+                    {copied ? "copied to clipboard" : "copy email"}
+                </button>
+                <span aria-live="polite" className="sr-only">
+                    {copied ? "Email address copied to clipboard" : ""}
+                </span>
+            </div>
+
             <p className="mt-6 font-mono text-sm text-graphite">
                 <a href={profile.phoneHref} className="link text-graphite hover:text-ink">
                     {profile.phone}
                 </a>
                 <span className="text-rule"> · </span>
                 {profile.location}
+                <span className="text-rule"> · </span>
+                <LocalTime />
             </p>
         </Reveal>
 
@@ -49,6 +109,7 @@ const Contact = () => (
             ))}
         </Reveal>
     </Section>
-);
+    );
+};
 
 export default Contact;

@@ -147,6 +147,37 @@
         transform: none;
     }
 
+    /* ── Heading reveal: the line rises out from behind a mask ─
+       A clip, not a fade — it reads as type being set rather than
+       another element fading in. */
+    .reveal-lines > * {
+        display: block;
+        clip-path: inset(0 0 110% 0);
+        transform: translateY(0.28em);
+        transition:
+            clip-path 620ms cubic-bezier(0.16, 1, 0.3, 1),
+            transform 620ms cubic-bezier(0.16, 1, 0.3, 1);
+        transition-delay: var(--reveal-delay, 0ms);
+    }
+    .reveal-lines.is-visible > * {
+        clip-path: inset(-0.15em 0 -0.15em 0);
+        transform: none;
+    }
+
+    /* ── Staggered children (stack tokens, stat cells) ───────── */
+    .stagger > * {
+        opacity: 0;
+        transform: translateY(6px);
+        transition:
+            opacity 320ms ease-out,
+            transform 320ms ease-out;
+        transition-delay: calc(var(--reveal-delay, 0ms) + var(--n, 0) * 45ms);
+    }
+    .stagger.is-visible > * {
+        opacity: 1;
+        transform: none;
+    }
+
     /* ── Page-load sequence — 400ms, 60ms stagger, once ─────── */
     .load-in {
         opacity: 0;
@@ -221,6 +252,21 @@
     /* The only other transform on the site: the underline wipe. */
     .link::after,
     .link-out::after {
+        transition: none;
+    }
+
+    /* Reveal type and staggered children outright — no clip, no travel.
+       Specificity has to match the .is-visible rules these override. */
+    .reveal-lines > *,
+    .reveal-lines.is-visible > * {
+        clip-path: none;
+        transform: none;
+        transition: none;
+    }
+    .stagger > *,
+    .stagger.is-visible > * {
+        opacity: 1;
+        transform: none;
         transition: none;
     }
 }

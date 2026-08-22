@@ -1,12 +1,11 @@
 import { work } from "../data";
 import { Section } from "../components/Spine";
 import Reveal from "../components/Reveal";
+import Heading from "../components/Heading";
 
 const Work = () => (
     <Section index="03" label="WORK" id="work">
-        <Reveal as="h2" className="text-2xl text-ink md:text-3xl">
-            Where I've worked
-        </Reveal>
+        <Heading className="text-2xl text-ink md:text-3xl">Where I've worked</Heading>
 
         <div className="mt-12">
             {work.map((role) => (

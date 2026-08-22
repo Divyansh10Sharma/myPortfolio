@@ -8,8 +8,38 @@ glow, no decorative gradients.
 
 React 18 · Vite · Tailwind · React Router · deployed on Vercel.
 
+Single page. React Router is kept only so unknown paths redirect to `/`
+rather than 404 — including `/rexpert`, which an earlier draft used.
+
 No animation library, no charting library. Motion is CSS transitions plus the
-IntersectionObserver API; every chart and diagram is hand-built inline SVG.
+IntersectionObserver API; every chart is hand-built inline SVG.
+
+## Motion
+
+Motion is instrumentation, not decoration — it either carries information or
+responds to input. Nothing scales, glows, or floats.
+
+- **fig. 01 is interactive.** Scrub it with the pointer (or focus it and use
+  ← / →) to read the sensor count, the reconciled count and the drift at any
+  step. A crosshair marks the position and a bar shows the gap being measured.
+- **The spine is a read-position gauge** — it fills in `--signal` down to
+  wherever you've scrolled, and the current section's tick and number light up.
+- **Stats count up** once, when they first enter view.
+- **Headings are unmasked by a clip**, so the line rises out from behind its
+  own baseline rather than fading in.
+- **Stack tokens arrive in sequence.**
+- **A sparse field drifts behind the hero** — square marks and hairline links
+  in `--graphite`/`--rule`, no colour, linking to the pointer as it moves. It
+  is hand-drawn on a 2D canvas (no library), starts only after `load` plus an
+  idle callback so it never competes with hydration, runs at 30fps and 1x
+  device pixel ratio, stops entirely once scrolled past, and is skipped below
+  768px and under reduced motion.
+- The email address can be copied with one click, and the contact line shows
+  live local time in Delhi.
+
+All of it is disabled or reduced under `prefers-reduced-motion`, where content
+is shown immediately rather than being gated on an animation. Layout shift is
+zero: the fig. 01 readout reserves its height so the chart never moves.
 
 ## Design system
 
@@ -39,18 +69,26 @@ WCAG AA.
 ```
 src/
   components/         Nav, Footer, Spine, Reveal, Icons
-    TelemetryStrip    Hero figure — step-sensor reconciliation (fig. 01)
-    DiagramParts      Shared SVG primitives for the case-study figures
-    DiagramRequestFlow  fig. 02 — request flow + model context boundary
-    DiagramAgentLoop    fig. 03 — the closed agent loop
+    TelemetryStrip    Hero figure — step-sensor drift (fig. 01)
   sections/           Homepage sections, one file each
-  pages/              Home, Rexpert (case study)
+  pages/Home.jsx      The single page
   data/index.js       All copy and content — edit here, not in components
 ```
 
 Content lives in [`src/data/index.js`](src/data/index.js). The section spine,
 its numbering and its tick marks come from
 [`src/components/Spine.jsx`](src/components/Spine.jsx).
+
+## Confidentiality
+
+The Rexpert entry is deliberately described at capability level only — its
+design is under NDA, and the entry carries a visible "Details withheld under
+NDA" marker. **Do not add implementation detail to it.** There is a comment to
+that effect in `src/data/index.js`.
+
+The other Train Rex entries still describe their internals in some depth. If
+your employer would consider any of that sensitive, dial those back the same
+way.
 
 ## Develop
 
@@ -73,7 +111,7 @@ palette at 1200×630.
 
 ## Quality floor
 
-Verified on the production build with Lighthouse (both routes):
+Verified on the production build with Lighthouse:
 performance 98, accessibility 100, best practices 100, SEO 100.
 
 Also verified: no horizontal overflow at 375px, wide figures scroll rather than

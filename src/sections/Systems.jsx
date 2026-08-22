@@ -1,19 +1,21 @@
-import { Link } from "react-router-dom";
 import { systems } from "../data";
 import { Section } from "../components/Spine";
 import Reveal from "../components/Reveal";
-import { ArrowRight } from "../components/Icons";
+import Heading from "../components/Heading";
 
 const StackLine = ({ stack }) => (
-    <p className="mt-5 font-mono text-xs leading-relaxed">
-        <span className="uppercase tracking-label text-graphite">Stack&nbsp;&nbsp;</span>
+    <Reveal
+        effect="stagger"
+        className="mt-5 flex flex-wrap items-baseline gap-x-2 font-mono text-xs leading-relaxed"
+    >
+        <span className="uppercase tracking-label text-graphite">Stack</span>
         {stack.map((item, i) => (
-            <span key={item}>
-                {i > 0 && <span className="text-rule"> · </span>}
-                <span className="text-ink">{item}</span>
+            <span key={item} style={{ "--n": i + 1 }} className="text-ink">
+                {i > 0 && <span className="mr-2 text-rule">·</span>}
+                {item}
             </span>
         ))}
-    </p>
+    </Reveal>
 );
 
 const SystemBlock = ({ system, isFirst }) => (
@@ -47,14 +49,10 @@ const SystemBlock = ({ system, isFirst }) => (
 
             <StackLine stack={system.stack} />
 
-            {system.href && (
-                <Link
-                    to={system.href}
-                    className="link mt-5 inline-flex items-center gap-2 font-mono text-sm text-signal"
-                >
-                    {system.hrefLabel}
-                    <ArrowRight size={13} />
-                </Link>
+            {system.confidential && (
+                <p className="mt-5 border-l border-rule pl-4 font-mono text-xs text-graphite">
+                    Details withheld under NDA
+                </p>
             )}
 
             {system.figure === "telemetry" && (
@@ -73,16 +71,14 @@ const Systems = () => (
     <Section index="02" label="SYSTEMS" id="systems">
         <div className="grid grid-cols-1 gap-x-6 md:grid-cols-12">
             <div className="md:col-span-8">
-                <Reveal as="h2" className="text-2xl text-ink md:text-3xl">
-                    Systems I own
-                </Reveal>
+                <Heading className="text-2xl text-ink md:text-3xl">Systems I own</Heading>
                 <Reveal
                     as="p"
                     delay={60}
                     className="mt-5 max-w-measure font-sans text-base text-graphite"
                 >
-                    Six production systems at Train Rex, each shipped end-to-end. The
-                    common thread is keeping the deterministic parts deterministic.
+                    Six production systems at Train Rex, each shipped end-to-end —
+                    backend, mobile, and the infrastructure in between.
                 </Reveal>
             </div>
         </div>

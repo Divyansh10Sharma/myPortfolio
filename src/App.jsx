@@ -1,7 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Home from "./pages/Home";
-import Rexpert from "./pages/Rexpert";
 import Nav from "./components/Nav";
 import Footer from "./components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
@@ -18,7 +17,6 @@ const App = () => (
         <Nav />
         <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/rexpert" element={<Rexpert />} />
             <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         <Footer />

@@ -62,13 +62,22 @@ const Nav = () => {
                                         <a
                                             href={`#${link.id}`}
                                             aria-current={active === link.id ? "true" : undefined}
-                                            className={`link font-mono text-sm transition-colors duration-150 ${
+                                            className={`link relative block py-1 font-mono text-sm transition-colors duration-150 ${
                                                 active === link.id
                                                     ? "text-signal"
                                                     : "text-graphite hover:text-ink"
                                             }`}
                                         >
                                             {link.label}
+                                            {/* Active marker, drawn under the
+                                                label rather than moved between
+                                                items — no layout thrash. */}
+                                            <span
+                                                aria-hidden="true"
+                                                className={`absolute -bottom-0.5 left-0 right-0 h-px origin-left bg-signal transition-transform duration-300 ${
+                                                    active === link.id ? "scale-x-100" : "scale-x-0"
+                                                }`}
+                                            />
                                         </a>
                                     </li>
                                 ))}

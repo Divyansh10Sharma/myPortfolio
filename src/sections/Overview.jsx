@@ -1,6 +1,7 @@
 import { overview } from "../data";
 import { Section } from "../components/Spine";
 import Reveal from "../components/Reveal";
+import Heading from "../components/Heading";
 
 const Overview = () => {
     const { heading, paragraphs, certification } = overview;
@@ -9,9 +10,7 @@ const Overview = () => {
         <Section index="01" label="OVERVIEW" id="overview">
             <div className="grid grid-cols-1 gap-x-6 gap-y-12 md:grid-cols-12">
                 <div className="md:col-span-7">
-                    <Reveal as="h2" className="text-2xl text-ink md:text-3xl">
-                        {heading}
-                    </Reveal>
+                    <Heading className="text-2xl text-ink md:text-3xl">{heading}</Heading>
 
                     <div className="mt-8 flex flex-col gap-5">
                         {paragraphs.map((p, i) => (
