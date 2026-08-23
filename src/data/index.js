@@ -13,8 +13,8 @@ export const profile = {
     location: "Delhi, India",
     github: "https://github.com/Divyansh10Sharma",
     githubLabel: "github.com/Divyansh10Sharma",
-    linkedin: "https://linkedin.com/in/divyansh-sharma",
-    linkedinLabel: "linkedin.com/in/divyansh-sharma",
+    linkedin: "https://www.linkedin.com/in/divyansh-sharma-convivial/",
+    linkedinLabel: "linkedin.com/in/divyansh-sharma-convivial",
     resume:
         "https://drive.google.com/file/d/1MbxOlm460Ac9LdPARNcP_0GITvXLxAs_/view?usp=sharing",
     intro:
