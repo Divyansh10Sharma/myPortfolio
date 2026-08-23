@@ -16,7 +16,7 @@ export const profile = {
     linkedin: "https://linkedin.com/in/divyansh-sharma",
     linkedinLabel: "linkedin.com/in/divyansh-sharma",
     resume:
-        "https://drive.google.com/file/d/10OvlIDWrfouAXPOIEFfQf2Epkp3rfHXL/view?usp=drivesdk",
+        "https://drive.google.com/file/d/1MbxOlm460Ac9LdPARNcP_0GITvXLxAs_/view?usp=sharing",
     intro:
         "I build production systems in healthtech — AI features, a custom real-time messaging layer, native health-sensor integration, and an in-flight Firestore-to-PostgreSQL migration. Two years, five codebases, real users.",
 };
