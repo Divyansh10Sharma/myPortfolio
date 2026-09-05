@@ -1,0 +1,599 @@
+/* ============================================================
+   Sprint 1 — type, layout, dark theme.
+
+   Palette is the old site's design system inverted: it was
+   ink-on-paper, this is paper-on-ink. Two colours had to move,
+   noted at their definitions.
+   ============================================================ */
+
+/* Self-hosted, latin subsets only — no Google Fonts request, no third-party
+   round trip on a slow connection. Same two families as the old site. */
+@import "@fontsource/archivo/latin-400.css";
+@import "@fontsource/archivo/latin-600.css";
+@import "@fontsource/ibm-plex-mono/latin-400.css";
+
+:root {
+    --void: #0b0b0c; /* not pure black: leaves headroom under the darkest
+                        tones for the Sprint 2 grain pass to sit in */
+    --bone: #e9ebed; /* was --paper on the old site */
+    --graphite: #8a929e; /* LIGHTENED from the old #5A626D, which only hit
+                            3.4:1 on this background. This is 6.4:1. */
+    --signal: #5b6cff; /* LIGHTENED from the old #1B36E8 (2.5:1 on black,
+                          unusable). This is 5.9:1. */
+    --rule: #23252a; /* hairlines */
+
+    --sans: "Archivo", system-ui, -apple-system, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, monospace;
+
+    --pad: clamp(1.25rem, 5vw, 6rem);
+    --gap: clamp(3.5rem, 12vh, 9rem);
+
+    /* One easing curve for the whole site. Slow out, no overshoot — the
+       "calm and expensive" pacing from CLAUDE.md, not a springy UI bounce. */
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    overflow-x: hidden;
+    /* Lenis drives scrolling in JS; this is the no-JS fallback so in-page
+       anchors still glide rather than jump. */
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    background: var(--void);
+    color: var(--bone);
+    font-family: var(--sans);
+    font-weight: 400;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+a {
+    color: inherit;
+}
+
+h1,
+h2,
+h3 {
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    line-height: 1.08;
+    margin: 0;
+}
+
+/* ── reveal ────────────────────────────────────────────────────
+   Elements start invisible and are un-hidden by GSAP. The class is
+   removed from <html> if JS never runs, so nothing can get stuck
+   invisible — see main.js. */
+.js .reveal {
+    opacity: 0;
+}
+
+.skip {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    z-index: 100;
+    background: var(--bone);
+    color: var(--void);
+    padding: 0.75rem 1.25rem;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+}
+.skip:focus {
+    left: 0;
+}
+
+:focus-visible {
+    outline: 2px solid var(--signal);
+    outline-offset: 3px;
+}
+
+/* ── nav ───────────────────────────────────────────────────── */
+
+.nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    background: color-mix(in srgb, var(--void) 82%, transparent);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--rule);
+}
+
+.nav__inner {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    height: 60px;
+    padding: 0 var(--pad);
+    max-width: 1600px;
+    margin: 0 auto;
+    font-family: var(--mono);
+    font-size: 0.8125rem;
+}
+
+.nav__name {
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.nav__links {
+    display: none;
+    gap: 1.75rem;
+    margin-left: auto;
+}
+
+.nav__links a {
+    text-decoration: none;
+    color: var(--graphite);
+    transition: color 0.4s var(--ease);
+}
+
+.nav__links a:hover,
+.nav__links a.is-active {
+    color: var(--bone);
+}
+
+.nav__resume {
+    margin-left: auto;
+    text-decoration: none;
+    white-space: nowrap;
+    color: var(--graphite);
+    transition: color 0.4s var(--ease);
+}
+.nav__resume:hover {
+    color: var(--bone);
+}
+
+@media (min-width: 800px) {
+    .nav__links {
+        display: flex;
+    }
+    .nav__resume {
+        margin-left: 0;
+        padding-left: 1.75rem;
+        border-left: 1px solid var(--rule);
+    }
+}
+
+/* ── hero ──────────────────────────────────────────────────── */
+
+.hero {
+    min-height: 100svh; /* svh not vh: mobile address bars make 100vh clip */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 7rem var(--pad) var(--gap);
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+.hero__meta {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin: 0;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--graphite);
+}
+
+.dot {
+    width: 6px;
+    height: 6px;
+    background: var(--signal);
+    border-radius: 50%;
+    flex: none;
+}
+
+.hero__headline {
+    /* CONTENT.md: roughly 8vw, must hold the screen alone. */
+    margin: 0.5em 0 0;
+    font-size: clamp(2.75rem, 8vw, 8.5rem);
+    letter-spacing: -0.04em;
+}
+
+/* SplitText wraps each line in these. overflow:hidden is what makes the
+   line rise out from behind its own baseline instead of fading in. */
+.line-mask {
+    overflow: hidden;
+    display: block;
+}
+
+.hero__sub {
+    margin: 2.5rem 0 0;
+    max-width: 46ch;
+    font-size: clamp(1rem, 1.5vw, 1.1875rem);
+    color: var(--graphite);
+}
+
+/* ── stats ─────────────────────────────────────────────────── */
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    margin: var(--gap) 0 0;
+    border-top: 1px solid var(--rule);
+}
+
+.stat {
+    padding: 1.5rem 1.5rem 1.5rem 0;
+    border-bottom: 1px solid var(--rule);
+}
+
+.stat dd {
+    margin: 0;
+    font-family: var(--mono);
+    font-size: clamp(1.5rem, 3vw, 2.25rem);
+    letter-spacing: -0.02em;
+}
+
+.stat dt {
+    margin-top: 0.4rem;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--graphite);
+}
+
+@media (min-width: 800px) {
+    .stats {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    .stat {
+        border-bottom: none;
+    }
+}
+
+/* ── sections ──────────────────────────────────────────────── */
+
+.section {
+    padding: var(--gap) var(--pad);
+    max-width: 1600px;
+    margin: 0 auto;
+    scroll-margin-top: 80px; /* so anchored sections clear the fixed nav */
+}
+
+.section__label {
+    display: flex;
+    align-items: baseline;
+    gap: 0.9rem;
+    margin: 0 0 3rem;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--graphite);
+}
+
+.section__label span {
+    color: var(--signal);
+}
+
+.section h2 {
+    font-size: clamp(1.75rem, 3.6vw, 3rem);
+    max-width: 20ch;
+}
+
+.section__grid {
+    display: grid;
+    gap: 3rem;
+}
+
+@media (min-width: 900px) {
+    .section__grid {
+        grid-template-columns: 1.6fr 1fr;
+        gap: clamp(3rem, 8vw, 8rem);
+    }
+}
+
+.prose {
+    max-width: 58ch;
+    margin: 1.75rem 0 0;
+    color: var(--bone);
+}
+
+.prose--lede {
+    color: var(--graphite);
+    margin-top: 1.5rem;
+}
+
+.col-side {
+    border-top: 1px solid var(--rule);
+    padding-top: 1.25rem;
+    align-self: start;
+}
+
+.label {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--graphite);
+    margin: 0;
+}
+
+.side__item {
+    margin: 0.9rem 0 0;
+    font-family: var(--mono);
+    font-size: 0.9rem;
+}
+
+.side__meta {
+    margin: 0.3rem 0 0;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--graphite);
+}
+
+/* ── rows (systems, work, projects) ────────────────────────── */
+
+.list {
+    margin-top: 4rem;
+    border-bottom: 1px solid var(--rule);
+}
+
+.row {
+    display: grid;
+    gap: 1.25rem;
+    padding: 2.75rem 0;
+    border-top: 1px solid var(--rule);
+}
+
+@media (min-width: 900px) {
+    .row {
+        grid-template-columns: 1fr 2fr;
+        gap: clamp(2rem, 6vw, 6rem);
+        padding: 3.5rem 0;
+    }
+}
+
+.row__index {
+    margin: 0;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    color: var(--graphite);
+}
+
+.row__head h3 {
+    margin-top: 0.75rem;
+    font-size: 1.375rem;
+}
+
+.row__subtitle {
+    margin: 0.4rem 0 0;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--graphite);
+}
+
+.org {
+    font-family: var(--mono);
+    font-weight: 400;
+    font-size: 0.95em;
+}
+
+/* The short line from CONTENT.md is the default layer; the long body from
+   the old site sits inside <details> below it. */
+.lead {
+    margin: 0;
+    font-size: clamp(1.0625rem, 1.7vw, 1.375rem);
+    max-width: 40ch;
+    letter-spacing: -0.01em;
+}
+
+.detail {
+    margin-top: 1.5rem;
+    border-top: 1px solid var(--rule);
+    padding-top: 1rem;
+}
+
+.detail summary {
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--graphite);
+    transition: color 0.4s var(--ease);
+    list-style: none;
+}
+.detail summary::-webkit-details-marker {
+    display: none;
+}
+.detail summary::before {
+    content: "+ ";
+}
+.detail[open] summary::before {
+    content: "− ";
+}
+.detail summary:hover {
+    color: var(--bone);
+}
+
+.detail p {
+    margin: 1.25rem 0 0;
+    max-width: 58ch;
+    color: var(--graphite);
+}
+
+.stack {
+    margin: 1.75rem 0 0;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--bone);
+}
+
+.stack .label {
+    display: inline;
+    margin-right: 0.6rem;
+}
+
+.nda {
+    margin: 1.25rem 0 0;
+    padding-left: 1rem;
+    border-left: 1px solid var(--rule);
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--graphite);
+}
+
+.out {
+    display: inline-block;
+    margin-top: 1.5rem;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--signal);
+    text-decoration: none;
+    word-break: break-all;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.4s var(--ease);
+}
+.out:hover {
+    border-bottom-color: var(--signal);
+}
+
+/* ── testimonials ──────────────────────────────────────────── */
+
+.quotes {
+    display: grid;
+    gap: 3.5rem;
+}
+
+@media (min-width: 900px) {
+    .quotes {
+        grid-template-columns: repeat(2, 1fr);
+        gap: clamp(3rem, 8vw, 7rem);
+    }
+}
+
+.quotes figure {
+    margin: 0;
+}
+
+.quotes blockquote {
+    margin: 0;
+    padding-left: 1.5rem;
+    border-left: 1px solid var(--signal);
+    font-size: clamp(1.125rem, 1.9vw, 1.4375rem);
+    letter-spacing: -0.01em;
+}
+
+.quotes figcaption {
+    margin-top: 1.25rem;
+    padding-left: 1.5rem;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--graphite);
+}
+
+/* ── contact ───────────────────────────────────────────────── */
+
+.email {
+    display: inline-block;
+    margin-top: 3.5rem;
+    font-family: var(--mono);
+    /* Long address, small screens: let it scale down rather than overflow. */
+    font-size: clamp(1rem, 4.6vw, 3rem);
+    line-height: 1.2;
+    text-decoration: none;
+    word-break: break-all;
+    border-bottom: 1px solid var(--rule);
+    transition: border-color 0.5s var(--ease), color 0.5s var(--ease);
+}
+.email:hover {
+    color: var(--signal);
+    border-bottom-color: var(--signal);
+}
+
+.contact__meta {
+    margin: 2rem 0 0;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--graphite);
+}
+.contact__meta a {
+    text-decoration: none;
+}
+.contact__meta a:hover {
+    color: var(--bone);
+}
+.sep {
+    color: var(--rule);
+    margin: 0 0.5rem;
+}
+
+.contact__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    margin: 2.5rem 0 0;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+}
+.contact__links a {
+    text-decoration: none;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 2px;
+    transition: border-color 0.4s var(--ease);
+}
+.contact__links a:hover {
+    border-bottom-color: var(--bone);
+}
+
+/* ── footer ────────────────────────────────────────────────── */
+
+.foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2.5rem var(--pad);
+    max-width: 1600px;
+    margin: 0 auto;
+    border-top: 1px solid var(--rule);
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--graphite);
+}
+.foot p {
+    margin: 0;
+}
+.foot a {
+    text-decoration: none;
+}
+.foot a:hover {
+    color: var(--bone);
+}
+
+/* ── reduced motion ────────────────────────────────────────────
+   A genuinely static version: everything visible, nothing animated,
+   and main.js never starts Lenis. */
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+    .js .reveal {
+        opacity: 1;
+    }
+    *,
+    *::before,
+    *::after {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+    }
+}

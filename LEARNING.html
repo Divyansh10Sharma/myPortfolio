@@ -1,0 +1,676 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Learning log — PortfolioV2</title>
+<style>
+    :root {
+        --void: #101114;
+        --panel: #17181c;
+        --bone: #e9ebed;
+        --graphite: #9aa2ae;
+        --signal: #7c8cff;
+        --rule: #2a2c33;
+        --code: #1c1e24;
+    }
+    * { box-sizing: border-box; }
+    body {
+        margin: 0;
+        background: var(--void);
+        color: var(--bone);
+        font: 18px/1.75 system-ui, -apple-system, "Segoe UI", sans-serif;
+        -webkit-font-smoothing: antialiased;
+    }
+    .wrap { max-width: 780px; margin: 0 auto; padding: 3rem 1.5rem 6rem; }
+
+    header.top {
+        display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap;
+        border-bottom: 1px solid var(--rule); padding-bottom: 1rem; margin-bottom: 2.5rem;
+    }
+    header.top h1 { font-size: 1rem; margin: 0; letter-spacing: .12em; text-transform: uppercase; color: var(--graphite); font-weight: 500; }
+    #counter { margin-left: auto; font-size: .85rem; color: var(--graphite); font-variant-numeric: tabular-nums; }
+
+    #toc { margin-bottom: 3rem; }
+    #toc ol { margin: 0; padding-left: 1.4rem; }
+    #toc li { margin: .35rem 0; }
+    #toc button {
+        background: none; border: 0; padding: 0; cursor: pointer; text-align: left;
+        color: var(--graphite); font: inherit; font-size: .95rem; line-height: 1.5;
+        border-bottom: 1px solid transparent;
+    }
+    #toc button:hover { color: var(--bone); }
+    #toc button.current { color: var(--signal); }
+
+    h2.page-title { font-size: 1.9rem; line-height: 1.15; letter-spacing: -.02em; margin: 0 0 2rem; }
+
+    h3 {
+        font-size: .78rem; letter-spacing: .16em; text-transform: uppercase;
+        color: var(--signal); margin: 2.75rem 0 .9rem; font-weight: 600;
+    }
+    h3:first-of-type { margin-top: 0; }
+
+    p { margin: 0 0 1.2rem; }
+    ul, ol.poke { margin: 0 0 1.2rem; padding-left: 1.4rem; }
+    li { margin: .5rem 0; }
+    strong { color: #fff; }
+    em { color: var(--graphite); font-style: italic; }
+
+    .kid { border-left: 2px solid var(--signal); padding-left: 1.4rem; }
+
+    table { width: 100%; border-collapse: collapse; margin: 0 0 1.4rem; font-size: .95rem; }
+    td { border-top: 1px solid var(--rule); padding: .6rem .8rem .6rem 0; vertical-align: top; }
+    td:first-child { color: var(--graphite); width: 45%; }
+
+    pre {
+        background: var(--code); border: 1px solid var(--rule); border-radius: 4px;
+        padding: 1.1rem 1.2rem; overflow-x: auto; margin: 0 0 1.3rem;
+        font: 14px/1.7 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+        color: #d4d8e0;
+    }
+    pre .c { color: #6f7787; }
+    code {
+        font: .88em ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+        background: var(--code); padding: .12em .4em; border-radius: 3px; color: #cfd4de;
+    }
+    pre code { background: none; padding: 0; }
+
+    .file { color: var(--signal); }
+
+    nav.pager {
+        display: flex; gap: 1rem; align-items: center;
+        margin-top: 4rem; padding-top: 1.5rem; border-top: 1px solid var(--rule);
+    }
+    nav.pager button {
+        background: none; color: var(--bone); border: 1px solid var(--rule);
+        padding: .6rem 1.2rem; border-radius: 3px; cursor: pointer;
+        font: inherit; font-size: .9rem; transition: border-color .3s, color .3s;
+    }
+    nav.pager button:hover:not(:disabled) { border-color: var(--bone); }
+    nav.pager button:disabled { opacity: .3; cursor: default; }
+    nav.pager .hint { margin-left: auto; font-size: .8rem; color: var(--graphite); }
+
+    @media (max-width: 600px) {
+        body { font-size: 17px; }
+        .wrap { padding: 2rem 1.1rem 4rem; }
+        nav.pager .hint { display: none; }
+    }
+</style>
+</head>
+<body>
+<div class="wrap">
+    <header class="top">
+        <h1>PortfolioV2 — learning log</h1>
+        <span id="counter"></span>
+    </header>
+
+    <div id="toc"></div>
+    <article id="page"></article>
+
+    <nav class="pager">
+        <button id="prev">← Previous</button>
+        <button id="next">Next →</button>
+        <span class="hint">← / → arrow keys</span>
+    </nav>
+</div>
+
+<script>
+/* ============================================================
+   Add a page by appending one object to this array. Do not
+   restructure the file. Keys: title, kid, why, translation,
+   code, tour, poke, breaks. Every value is an HTML string.
+   ============================================================ */
+
+const PAGES = [
+
+{
+title: "Why there is a loop at all",
+
+kid: `
+<p>Think about a flipbook — the little books where you draw a stick man on every page,
+then riffle the pages with your thumb and he runs.</p>
+<p>Nothing in that book moves. Every page is a still drawing that will never change. The
+running happens entirely in your eye, because the pages arrive faster than your brain can
+keep them apart, so it gives up and merges them into one moving thing.</p>
+<p>Your screen is a flipbook that redraws itself about sixty times every second. Not the
+bits that changed — the whole picture, from scratch, sixty times a second, forever, even
+when you are just staring at a still page and nothing at all is happening.</p>
+<p>So when you want something on a screen to move, you never actually move it. You can't.
+There is nothing there to push. What you do instead is answer one question, over and over,
+sixty times a second: <em>"if I had to draw this right now, this instant, what would it
+look like?"</em> Answer that fast enough and your eye does the rest.</p>
+`,
+
+why: `
+<p>Every single thing on the site's wishlist — the scroll that glides, the grain, the
+distortion, the cursor that reacts — is a different answer to that same question, given
+sixty times a second. There is no second mechanism arriving in a later sprint.</p>
+<p>Sprint 1 uses the loop for smooth scrolling and the headline reveal. Sprint 2 hands
+the same loop to a shader. The loop is the machine; everything else is what we ask it.</p>
+`,
+
+translation: `
+<table>
+<tr><td>One page of the flipbook</td><td>a <strong>frame</strong></td></tr>
+<tr><td>Riffling the pages</td><td>the <strong>render loop</strong> / <strong>ticker</strong></td></tr>
+<tr><td>How many pages go by each second</td><td><strong>frame rate</strong>, measured in <strong>fps</strong></td></tr>
+<tr><td>"What would this look like right now?"</td><td>the <strong>tick</strong> or update function</td></tr>
+<tr><td>The clock on the wall while you flip</td><td><strong>elapsed time</strong></td></tr>
+</table>
+<p>Sixty frames per second means each frame gets <strong>16.6 milliseconds</strong> — that
+is your entire budget to work out the new state and draw it. Go over, and you miss the
+deadline: the screen shows the previous frame again and the motion visibly hitches. This
+is what people mean by "dropping frames". It is a deadline, not a speed.</p>
+`,
+
+code: `
+<p>The loop that drives this site is GSAP's ticker, and we add Lenis to it in
+<span class="file">src/main.js</span>:</p>
+<pre><code><span class="c">// One loop for the whole page, not two. GSAP already runs a</span>
+<span class="c">// requestAnimationFrame ticker, so Lenis is driven from it rather</span>
+<span class="c">// than starting a second loop competing for the same 16ms.</span>
+gsap.ticker.add((time) =&gt; lenis.raf(time * 1000));
+<span class="c">// GSAP counts in seconds, Lenis wants milliseconds — hence * 1000</span></code></pre>
+<p>Written out by hand, with no library at all, the same idea is four lines:</p>
+<pre><code>function tick() {
+  requestAnimationFrame(tick);   <span class="c">// ask for the next page first</span>
+  const now = performance.now(); <span class="c">// look at the clock</span>
+  update(now);                   <span class="c">// what does this look like NOW?</span>
+  draw();                        <span class="c">// tear the page off</span>
+}
+tick();</code></pre>
+<p>Note the shape: the function's last real act is to ask to be called again. A render
+loop is a function that keeps re-hiring itself.</p>
+`,
+
+tour: `
+<p>The important line is the one asking for the next frame, and it comes <em>first</em> on
+purpose. If the drawing work below it throws an error, the next frame has already been
+requested, so the site limps rather than freezing solid.</p>
+<p>The second important idea is that <code>update</code> and <code>draw</code> are separate.
+Changing where something is and actually drawing it are two different events — you can do
+the first without the second, and then nothing appears, which is a confusing afternoon the
+first time it happens to you.</p>
+`,
+
+poke: `
+<ol class="poke">
+<li>In <span class="file">src/main.js</span>, find <code>duration: 1.2</code> in the Lenis
+options. Change it to <code>3.5</code>. Scroll. The page now takes three and a half seconds
+to coast to a stop and feels like it is underwater — proof that the "smoothness" is really
+just a number saying how long the glide lasts.</li>
+<li>Change it to <code>0.1</code>. The glide vanishes and you are back to a normal, hard
+browser scroll. Somewhere around <code>1.0</code>–<code>1.4</code> is the range that reads
+as expensive rather than broken. Put it back to <code>1.2</code>.</li>
+<li>Open devtools → Ctrl+Shift+P → "Show frames per second (FPS) meter". Scroll the page
+and watch the number. That counter <em>is</em> the flipbook speed.</li>
+</ol>
+`,
+
+breaks: `
+<ul>
+<li><strong>Two loops instead of one.</strong> The classic version of this is calling
+<code>lenis.raf()</code> from its own <code>requestAnimationFrame</code> while GSAP runs
+its ticker separately. Both work, so nothing errors — you just get subtle jitter, because
+two independent loops disagree about when "now" is. That is exactly why our Lenis is
+attached to the GSAP ticker.</li>
+<li><strong>Animating in the loop but never drawing.</strong> Values change every frame and
+the screen never updates. Nothing throws. Log a value to confirm the loop is running before
+you go hunting for a rendering bug.</li>
+<li><strong>Work that piles up inside the tick.</strong> Anything expensive — measuring an
+element's size, touching the DOM — happens sixty times a second here. It is the single
+easiest place in a codebase to accidentally cost 40ms a frame.</li>
+</ul>
+`
+},
+
+{
+title: "Why requestAnimationFrame and not setInterval",
+
+kid: `
+<p>Imagine you are painting a fence, and a photographer takes a picture of it every
+sixteen seconds to show your progress. You want to paint in step with the photos.</p>
+<p><strong>The bad way:</strong> you bring an egg timer set to sixteen seconds and paint
+whenever it dings. Your timer and the photographer's schedule were never connected. They
+drift. Sometimes you paint two strips between photos and the second one is never seen by
+anybody. Sometimes you finish a strip a fraction of a second after the shutter clicks, so
+that photo shows the fence half-done and the next one jumps.</p>
+<p>Worse: when you go inside for lunch and nobody is even looking at the fence, your egg
+timer keeps dinging and you keep painting, for no one.</p>
+<p><strong>The good way:</strong> you ask the photographer to tap you on the shoulder just
+before each shot. One tap, one strip, perfectly in step, and while you are at lunch there
+are no photos, so there are no taps, and you rest.</p>
+`,
+
+why: `
+<p>Every animation on this site is scheduled by the shoulder-tap, because the browser is
+the only thing that actually knows when the screen is about to be redrawn.</p>
+<p>The lunch break matters more than it sounds: when the visitor switches tabs, the taps
+stop and the whole site goes quiet instead of grinding a phone battery in the background.</p>
+`,
+
+translation: `
+<table>
+<tr><td>The egg timer</td><td><code>setInterval(fn, 16)</code></td></tr>
+<tr><td>The photographer tapping your shoulder</td><td><code>requestAnimationFrame(fn)</code></td></tr>
+<tr><td>The camera clicking</td><td>the display's <strong>refresh</strong> / vsync</td></tr>
+<tr><td>Painting a strip nobody photographs</td><td>a <strong>dropped</strong> or wasted frame</td></tr>
+<tr><td>Going inside for lunch</td><td>the tab going to the background</td></tr>
+</table>
+<p>The tap also hands you something useful: the current time. <code>requestAnimationFrame</code>
+passes a timestamp to your function, which is where the clock reading in the next page
+comes from.</p>
+`,
+
+code: `
+<pre><code><span class="c">// The egg timer. Fires on its own schedule, forever, even in a</span>
+<span class="c">// background tab. 16ms is a guess at the refresh rate, and it is</span>
+<span class="c">// wrong on any 120Hz phone or gaming monitor.</span>
+setInterval(update, 16);
+
+<span class="c">// The shoulder tap. Fires immediately before the next repaint,</span>
+<span class="c">// at whatever rate this particular screen actually runs, and</span>
+<span class="c">// pauses entirely when the tab is hidden.</span>
+requestAnimationFrame(update);</code></pre>
+<p>In <span class="file">src/main.js</span> we never call it directly, because GSAP's ticker
+is already a well-behaved wrapper around it:</p>
+<pre><code>gsap.ticker.add((time) =&gt; lenis.raf(time * 1000));
+gsap.ticker.lagSmoothing(0);</code></pre>
+<p>That second line is worth knowing. By default GSAP notices when a frame took far too
+long — the laptop woke from sleep, say — and quietly pretends less time passed, so
+animations don't teleport. Lenis is doing its own physics off real elapsed time, so we turn
+the lie off and let both see the same clock.</p>
+`,
+
+tour: `
+<p>There is only one idea here: <em>let the thing that owns the screen decide when you
+draw.</em> Everything else follows from it — the correct rate on any display, no wasted
+work, automatic pausing in background tabs.</p>
+`,
+
+poke: `
+<ol class="poke">
+<li>Load the site, then switch to another tab for ten seconds and come back. The animations
+pick up where they were rather than having raced ahead. That is the lunch break.</li>
+<li>In the console, run <code>gsap.ticker.fps(10)</code>. Everything drops to ten frames a
+second — the same animations, the same durations, just far fewer pages in the flipbook.
+<code>gsap.ticker.fps(60)</code> puts it back.</li>
+<li>Run <code>gsap.globalTimeline.timeScale(0.15)</code> and scroll to trigger a reveal.
+The whole site moves in slow motion, which is by far the best way to see what an easing
+curve is actually doing. <code>timeScale(1)</code> restores it.</li>
+</ol>
+`,
+
+breaks: `
+<ul>
+<li><strong>Assuming 60fps.</strong> Writing <code>x += 2</code> per frame gives double the
+speed on a 120Hz screen and half on a struggling phone. The fix is the next page.</li>
+<li><strong>Forgetting to cancel.</strong> A loop started for a component that later goes
+away keeps running forever, holding everything it references in memory. Keep the id that
+<code>requestAnimationFrame</code> returns and <code>cancelAnimationFrame</code> it.</li>
+<li><strong>Stacking loops.</strong> Start the loop in a function that runs twice and you
+now have two loops, each drawing every frame. Symptom: everything moves at exactly double
+speed, which reads as "the easing is wrong" rather than "there are two loops".</li>
+</ul>
+`
+},
+
+{
+title: "Lerp — the walk-half-way-there trick",
+
+kid: `
+<p>Stand across the room from a door. Every second, walk exactly <strong>one tenth</strong>
+of whatever distance is still between you and it. Not a tenth of the original distance — a
+tenth of what is <em>left</em>, measured fresh each time.</p>
+<p>At first the gap is big, so a tenth of it is a big stride. As you close in, the gap
+shrinks, so each step shrinks with it. You start fast and glide to an almost-stop, without
+ever deciding to slow down. The slowing is automatic. It falls out of the rule.</p>
+<p>Two things worth noticing. You never <em>quite</em> arrive, because there is always a
+tenth of something left — but the gap gets so small that nobody could tell. And if somebody
+picks up the door and moves it while you are walking, you don't have to recalculate a plan.
+The next step is still just a tenth of whatever is left. It handles the interruption for
+free.</p>
+`,
+
+why: `
+<p>This is the entire reason the scroll on this site glides instead of jumping: there is a
+real scroll position and a displayed one, and every frame the displayed one walks a fraction
+of the way toward the real one.</p>
+<p>It is also what a custom cursor will use in Sprint 3 — the cursor chases the pointer
+rather than being pinned to it, which is the whole trick behind that slightly liquid feel.</p>
+`,
+
+translation: `
+<table>
+<tr><td>Where you are standing</td><td><code>current</code></td></tr>
+<tr><td>The door</td><td><code>target</code></td></tr>
+<tr><td>The one-tenth</td><td>the <strong>factor</strong> — how eagerly it chases, 0 to 1</td></tr>
+<tr><td>The whole rule</td><td><strong>lerp</strong>, short for linear interpolation</td></tr>
+<tr><td>Somebody moving the door</td><td>the target changing mid-animation</td></tr>
+</table>
+<p>The name is unhelpfully grand. "Interpolate" means "find a value in between", and
+"linear" means "in a straight line". Lerp finds a point some fraction of the way from A to
+B. That is all it is. The magic is not in the maths, it is in the fact that we <em>re-run
+it every frame against a target that keeps changing.</em></p>
+`,
+
+code: `
+<pre><code><span class="c">// The whole idea, in one line.</span>
+<span class="c">// factor 0 = never move. 1 = teleport instantly.</span>
+<span class="c">// 0.1 = cover a tenth of the remaining gap this frame.</span>
+const lerp = (current, target, factor) =&gt;
+  current + (target - current) * factor;
+
+<span class="c">// (target - current) is "how far is left" — the gap.</span>
+<span class="c">// Take a slice of the gap, add it to where we are. That's it.</span>
+
+<span class="c">// Used every frame, chasing a target that changes:</span>
+function tick() {
+  requestAnimationFrame(tick);
+  displayed = lerp(displayed, actualScroll, 0.1);
+  render(displayed);
+}</code></pre>
+<p>Lenis is a careful, frame-rate-corrected version of exactly this, which is why its
+config in <span class="file">src/main.js</span> reads as a duration rather than a factor —
+it does the correction so we don't have to.</p>
+`,
+
+tour: `
+<p>The one line that matters is <code>current + (target - current) * factor</code>. Read it
+as three steps: <em>how far is left</em>, <em>take a slice of that</em>, <em>add it on</em>.</p>
+<p>The line that makes it an animation rather than a calculation is the one running it every
+frame with the result fed back in. Lerp used once is just a midpoint. Lerp used sixty times
+a second on its own output is motion.</p>
+`,
+
+poke: `
+<ol class="poke">
+<li>Paste this into the console on the site:
+<pre><code>let c = 0; const t = 100;
+for (let i = 0; i &lt; 12; i++) { c = c + (t - c) * 0.1; console.log(i, c.toFixed(2)); }</code></pre>
+Watch the steps: 10, then 9, then 8.1, then 7.29. Big strides shrinking on their own. That
+column of numbers is the deceleration you feel when you scroll.</li>
+<li>Change <code>0.1</code> to <code>0.5</code> and run it again — it arrives in about six
+steps and would feel snappy and cheap. Change it to <code>0.02</code> and it barely moves,
+which would feel unresponsive and broken.</li>
+<li>In <span class="file">src/main.js</span>, set the Lenis <code>duration</code> to
+<code>0.6</code> and scroll. That is a high factor: quick, tight, ordinary. The
+site's calm depends on that number being roughly twice as big.</li>
+</ol>
+`,
+
+breaks: `
+<ul>
+<li><strong>The frame-rate trap.</strong> A raw lerp of 0.1 per frame is twice as fast at
+120fps as at 60fps, because it is applied twice as often. It is the same bug as
+<code>x += 2</code>, wearing a nicer coat. Real libraries correct for elapsed time; hand-
+rolled ones usually don't, and it only shows up on someone else's machine.</li>
+<li><strong>Waiting for it to finish.</strong> It never arrives exactly. If something must
+run "on arrival", check whether the gap is smaller than a threshold — never
+<code>current === target</code>, which may be true only after a very long time, or never.</li>
+<li><strong>Factors above 1.</strong> Overshoots past the target, then overshoots back,
+growing each time. The symptom is something that vibrates violently instead of settling.</li>
+</ul>
+`
+},
+
+{
+title: "Easing — why 1.4 seconds can feel cheap or expensive",
+
+kid: `
+<p>Two ways to be handed a glass of water.</p>
+<p>A robot arm takes it from the table and puts it in your hand, moving at one exact speed
+the whole way, starting instantly and stopping dead. It takes one second. It is deeply
+unsettling to watch, and you cannot say why.</p>
+<p>A person does the same thing in the same one second. But their hand doesn't start
+instantly — it takes a moment to get going, moves quickest in the middle, and slows as it
+arrives so the water doesn't slop. Same distance, same second, completely different feeling.</p>
+<p>Nothing in the real world starts or stops instantly. Everything has to get going and has
+to settle. When something on a screen moves at a dead constant speed, your eye reads it as
+mechanical, and "mechanical" is one short step from "cheap".</p>
+<p>So the interesting question was never <em>how long</em> the movement takes. It is
+<em>how the speed is distributed</em> across that time. That distribution has a name and it
+is the difference between a site that feels expensive and one that doesn't.</p>
+`,
+
+why: `
+<p>CLAUDE.md asks for slow, confident motion in the 0.8–1.6 second range. Duration alone
+won't get there — a slow linear animation just feels sluggish. What makes it read as
+expensive is that almost all the movement happens early and then it takes its time
+settling.</p>
+<p>That is why the headline reveal uses <code>expo.out</code>: it covers most of the
+distance almost immediately and spends the rest of the 1.4 seconds easing to a stop.</p>
+`,
+
+translation: `
+<table>
+<tr><td>The robot arm</td><td><code>linear</code> — no easing</td></tr>
+<tr><td>Taking a moment to get going</td><td><strong>ease in</strong></td></tr>
+<tr><td>Slowing down as it arrives</td><td><strong>ease out</strong></td></tr>
+<tr><td>Both ends</td><td><strong>ease in-out</strong></td></tr>
+<tr><td>How the speed is spread over the time</td><td>the <strong>easing curve</strong></td></tr>
+<tr><td>The curve written as four numbers</td><td><code>cubic-bezier(x1, y1, x2, y2)</code></td></tr>
+</table>
+<p>The rule of thumb: <strong>things arriving get ease-out, things leaving get ease-in.</strong>
+Something entering has already got your attention and needs to settle gracefully; something
+leaving should get out of the way. Nearly all of this site is ease-out, because nearly all
+of it is arriving.</p>
+`,
+
+code: `
+<p>In <span class="file">src/main.js</span>, the headline:</p>
+<pre><code>.from(split.lines, {
+  yPercent: 115,      <span class="c">// just past 100 so no descender peeks out of the mask</span>
+  duration: 1.4,      <span class="c">// slow end of the 0.8–1.6s band — first thing anyone sees</span>
+  ease: "expo.out",   <span class="c">// most of the distance up front, long graceful settle</span>
+  stagger: 0.09,      <span class="c">// each line starts 90ms after the one above it</span>
+})</code></pre>
+<p>And in <span class="file">src/style.css</span>, one curve for every CSS transition on
+the site:</p>
+<pre><code>--ease: cubic-bezier(0.16, 1, 0.3, 1);</code></pre>
+<p>Those four numbers are the handles on a curve of distance against time. The second
+number being <code>1</code> is what makes it an "out" — it says <em>be finished almost
+immediately</em>, and the rest of the duration is spent creeping the last few percent.
+Using one shared curve everywhere is a real design decision: it is what makes separate
+animations feel like one system rather than a pile of parts.</p>
+`,
+
+tour: `
+<p><code>ease</code> and <code>duration</code> are doing completely different jobs and it is
+worth keeping them apart in your head. Duration is how long. Ease is the personality. You
+can change either without touching the other, and the personality matters more.</p>
+<p><code>stagger</code> is the third one, and it is cheap magic: 90 milliseconds between
+lines is enough for the eye to read them as a sequence rather than a block, without ever
+feeling like it is waiting.</p>
+`,
+
+poke: `
+<ol class="poke">
+<li>In <span class="file">src/main.js</span>, change the headline's <code>ease</code> to
+<code>"none"</code> and reload. Same 1.4 seconds, and it now looks like a cheap slideshow
+transition. This is the single most convincing demonstration in this whole file — change
+nothing but the personality and the site stops feeling expensive.</li>
+<li>Try <code>"back.out(1.7)"</code>. It overshoots and springs back. Playful, bouncy, and
+completely wrong for this site — useful to see what we are deliberately not doing.</li>
+<li>Change <code>stagger: 0.09</code> to <code>0.4</code>. The lines now arrive so far apart
+that you notice yourself waiting. Then try <code>0</code> — they move as one slab and the
+sequence is lost. Somewhere near 0.08–0.12 is where it reads as deliberate.</li>
+<li>Open <a href="https://cubic-bezier.com" style="color:var(--signal)">cubic-bezier.com</a>
+and paste in <code>0.16, 1, 0.3, 1</code>. Drag the handles and watch the little dot replay.
+That dot is exactly what your eye is reading on the real site.</li>
+</ol>
+`,
+
+breaks: `
+<ul>
+<li><strong>Ease-in on something arriving.</strong> It creeps out of nowhere and then rushes
+at you — the most common way an animation feels "off" without anyone being able to name why.</li>
+<li><strong>A different curve for every animation.</strong> Individually fine, collectively
+incoherent. One curve, reused, is the whole reason a site reads as designed.</li>
+<li><strong>Reaching for duration when the ease is the problem.</strong> If something feels
+sluggish, making it slower with a good curve often fixes it and making it faster with a bad
+one rarely does.</li>
+<li><strong>Forgetting reduced motion.</strong> Every curve on this site is skipped entirely
+when the visitor has asked their OS for less motion — see the top of
+<span class="file">src/main.js</span>. Easing is decoration; the content is not.</li>
+</ul>
+`
+},
+
+{
+title: "How Sprint 1 fits together",
+
+kid: `
+<p>Everything in this file so far has been one idea seen from four angles, so here it is
+whole.</p>
+<p>There is a room where a picture of the page gets redrawn sixty times a second. A polite
+photographer taps you just before each redraw, so you are always in step and you rest when
+nobody is watching. Each time you are tapped you ask "where should everything be right
+now?" — and for anything chasing something else, the answer is "a fraction closer than it
+was". For anything playing out over a set time, the answer comes off a curve that decides
+how the speed is spread across that time.</p>
+<p>That is the entire motion system of this site. Four ideas. Everything in the next three
+sprints is those four ideas pointed at something new.</p>
+`,
+
+why: `
+<p>Sprint 1 deliberately ships with no WebGL at all: real HTML text, a dark layout, smooth
+scroll, and a headline reveal. If everything after this fails, this is still a better
+portfolio than the old one — which is the whole point of doing it first.</p>
+<p>It also means the motion layer is already proven before a single shader exists.</p>
+`,
+
+translation: `
+<table>
+<tr><td><span class="file">index.html</span></td><td>All the content, as real text. Works with JavaScript switched off.</td></tr>
+<tr><td><span class="file">src/style.css</span></td><td>Type, dark palette, layout, and the one shared easing curve.</td></tr>
+<tr><td><span class="file">src/main.js</span></td><td>The motion layer: Lenis, the GSAP ticker, SplitText, scroll reveals.</td></tr>
+<tr><td><span class="file">src/webgl/Stage.js</span></td><td>Not loaded yet. The renderer skeleton, waiting for Sprint 2.</td></tr>
+<tr><td><span class="file">vite.config.js</span></td><td>Substitutes the real domain into the Open Graph tags at build time.</td></tr>
+</table>
+`,
+
+code: `
+<p>The one structural idea worth carrying forward, from the top of
+<span class="file">src/main.js</span>:</p>
+<pre><code><span class="c">// Only now is it safe for CSS to hide things pre-animation.</span>
+document.documentElement.classList.add("js");</code></pre>
+<p>The CSS rule that hides everything before it animates is written as
+<code>.js .reveal { opacity: 0 }</code> — it only applies once JavaScript has proved it is
+running. If the bundle fails to load, on a flaky connection or an old browser, nothing is
+ever hidden, so nothing can get stuck invisible. The page just sits there being readable.</p>
+<p>This is a small trick and it is the difference between a site that degrades and a site
+that turns into a blank black rectangle for the one recruiter whose network dropped a file.</p>
+`,
+
+tour: `
+<p>Read the files in this order: <span class="file">index.html</span> to see that the
+content is genuinely all there in plain markup, then <span class="file">src/style.css</span>
+for the palette and the shared curve, then <span class="file">src/main.js</span> top to
+bottom — it is short, and it is in execution order.</p>
+`,
+
+poke: `
+<ol class="poke">
+<li>Open devtools → Network → tick "Disable cache", set throttling to "Slow 3G", and
+reload. Watch the text appear before the fonts and long before the animations. That order
+is the whole architecture, made visible.</li>
+<li>In devtools → Rendering, tick "Emulate CSS prefers-reduced-motion". Reload. Everything
+is immediately visible, the scroll is native, nothing animates — and the site is still
+completely usable. That is what "a genuinely static version" means.</li>
+<li>Switch JavaScript off entirely (devtools → Settings → Debugger → Disable JavaScript)
+and reload. The site still reads, still navigates, still links out. Slightly less pretty.
+That is the floor we are building on.</li>
+</ol>
+`,
+
+breaks: `
+<ul>
+<li><strong>Hiding things in CSS without a JS guard.</strong> One failed bundle and the page
+is permanently blank. Always gate "hide before animating" behind a class that JavaScript
+adds.</li>
+<li><strong>Splitting text before the font loads.</strong> SplitText measures where the
+lines break; if it measures the fallback font, the breaks land in the wrong places and jump
+when the real font arrives. Ours waits on <code>document.fonts.ready</code>.</li>
+<li><strong>Anchor links that bypass the smooth scroller.</strong> The browser jumps
+instantly, the scroller still thinks it is somewhere else, and the next wheel movement
+teleports the page. Every in-page link on this site is routed through Lenis for that reason.</li>
+</ul>
+`
+}
+
+];
+
+/* ── renderer ─────────────────────────────────────────── */
+
+const SECTIONS = [
+    ["The idea", "kid", "kid"],
+    ["Why it is in my site", "why", ""],
+    ["The translation", "translation", ""],
+    ["The code", "code", ""],
+    ["The tour", "tour", ""],
+    ["Go poke it", "poke", ""],
+    ["What usually breaks", "breaks", ""],
+];
+
+const pageEl = document.getElementById("page");
+const tocEl = document.getElementById("toc");
+const counterEl = document.getElementById("counter");
+const prevBtn = document.getElementById("prev");
+const nextBtn = document.getElementById("next");
+
+let index = 0;
+
+function buildToc() {
+    tocEl.innerHTML =
+        "<ol>" +
+        PAGES.map((p, i) => `<li><button data-i="${i}">${p.title}</button></li>`).join("") +
+        "</ol>";
+    tocEl.querySelectorAll("button").forEach((b) =>
+        b.addEventListener("click", () => go(Number(b.dataset.i)))
+    );
+}
+
+function render() {
+    const page = PAGES[index];
+
+    pageEl.innerHTML =
+        `<h2 class="page-title">${page.title}</h2>` +
+        SECTIONS.filter(([, key]) => page[key])
+            .map(([label, key, cls]) => `<h3>${label}</h3><div class="${cls}">${page[key]}</div>`)
+            .join("");
+
+    counterEl.textContent = `${index + 1} / ${PAGES.length}`;
+    prevBtn.disabled = index === 0;
+    nextBtn.disabled = index === PAGES.length - 1;
+
+    tocEl.querySelectorAll("button").forEach((b, i) =>
+        b.classList.toggle("current", i === index)
+    );
+
+    location.hash = String(index + 1);
+}
+
+function go(i) {
+    index = Math.max(0, Math.min(PAGES.length - 1, i));
+    render();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+prevBtn.addEventListener("click", () => go(index - 1));
+nextBtn.addEventListener("click", () => go(index + 1));
+
+document.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowLeft") go(index - 1);
+    if (e.key === "ArrowRight") go(index + 1);
+});
+
+// Deep-link support: LEARNING.html#3 opens page 3.
+const fromHash = parseInt(location.hash.slice(1), 10);
+if (fromHash >= 1 && fromHash <= PAGES.length) index = fromHash - 1;
+
+buildToc();
+render();
+</script>
+</body>
+</html>
