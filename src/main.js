@@ -13,6 +13,7 @@ import gsap from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
 import SplitText from "gsap/SplitText";
 import Lenis from "lenis";
+import Stage from "./webgl/Stage.js";
 
 gsap.registerPlugin(ScrollTrigger, SplitText);
 
@@ -20,6 +21,32 @@ const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").match
 
 // Only now is it safe for CSS to hide things pre-animation.
 document.documentElement.classList.add("js");
+
+// The browser restores your old scroll position on reload. With a smooth
+// scroller running, that restore happens before Lenis exists, so Lenis starts
+// out believing it is at the top while the page is actually halfway down — and
+// every scroll-triggered reveal below stays hidden forever. We take the scroll
+// position over and restore it ourselves once everything is running.
+if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+
+/* ── shader background ─────────────────────────────────────────
+   Started before anything else so it is painting from the first frame, and
+   wrapped because WebGL can be unavailable for reasons that have nothing to do
+   with our code: an old device, a blocklisted driver, a hardened browser, or
+   simply too many live WebGL contexts open in other tabs. The page underneath
+   is the same near-black, so losing this costs a gradient and nothing else. */
+
+let stage = null;
+const canvas = document.querySelector("#webgl");
+
+try {
+    stage = new Stage(canvas);
+    stage.start();
+    if (import.meta.env.DEV) window.stage = stage; // poke it from the console
+} catch (error) {
+    console.warn("WebGL unavailable — running without the shader background.", error);
+    canvas.remove();
+}
 
 /* ── smooth scroll ─────────────────────────────────────────────
    Lenis intercepts the wheel and animates the scroll position itself, so a
@@ -52,6 +79,21 @@ if (!reduceMotion) {
     // Lenis moves the page without firing native scroll events the way
     // ScrollTrigger expects, so it has to be told when the position changed.
     lenis.on("scroll", ScrollTrigger.update);
+
+    // The same scroll value goes into the shader. Note what is being handed
+    // over: a single number between 0 and 1, not pixels. The shader has no idea
+    // how tall the page is, and does not need to.
+    lenis.on("scroll", ({ progress }) => stage?.setScroll(progress));
+} else if (stage) {
+    // Reduced motion: no Lenis, so read the native scroll position instead. The
+    // background still responds to where the visitor is on the page — it just
+    // does not animate on its own.
+    const onNativeScroll = () => {
+        const max = document.documentElement.scrollHeight - window.innerHeight;
+        stage.setScroll(max > 0 ? window.scrollY / max : 0);
+    };
+    window.addEventListener("scroll", onNativeScroll, { passive: true });
+    onNativeScroll();
 }
 
 /* ── in-page links ─────────────────────────────────────────────
@@ -132,6 +174,52 @@ if (!reduceMotion) {
 } else {
     gsap.set(".reveal", { opacity: 1 });
 }
+
+/* ── landing part-way down the page ────────────────────────────
+   Someone opens a link ending in #systems, or reloads after scrolling. The
+   reveals below are all still at opacity 0, and their triggers will never fire
+   because the scroll event that would have fired them already happened before
+   any of this code existed.
+
+   So: jump to the target with the scroller that owns scrolling, then tell
+   ScrollTrigger to re-measure. On refresh it fires every trigger already past
+   its start point, which reveals everything above the current position. */
+
+function restoreScrollPosition() {
+    const hash = location.hash;
+    const target = hash && hash.length > 1 ? document.querySelector(hash) : null;
+
+    if (target) {
+        if (lenis) lenis.scrollTo(target, { offset: -60, immediate: true });
+        else target.scrollIntoView();
+    }
+
+    ScrollTrigger.refresh();
+}
+
+// After load, not before: images and fonts change element positions, and
+// measuring first means measuring the wrong thing.
+window.addEventListener("load", restoreScrollPosition);
+
+/* A last-resort guarantee. If anything above goes wrong — a thrown error, a
+   browser we did not anticipate, a trigger that never fires — content must
+   never stay invisible. The animation is decoration; the words are not.
+
+   Scoped deliberately: only elements the visitor can already see, and only
+   after killing the trigger that owns them. Revealing an element without
+   killing its trigger would leave the trigger free to fire later and animate it
+   from zero again, which is a flicker rather than a fix. */
+window.addEventListener("load", () => {
+    setTimeout(() => {
+        document.querySelectorAll(".reveal").forEach((el) => {
+            if (getComputedStyle(el).opacity !== "0") return;
+            if (el.getBoundingClientRect().top > window.innerHeight) return; // still below the fold, fine
+
+            ScrollTrigger.getAll().forEach((t) => t.trigger === el && t.kill());
+            gsap.set(el, { opacity: 1, y: 0 });
+        });
+    }, 2500);
+});
 
 /* ── nav active state ──────────────────────────────────────────
    Highlights the section currently under the nav. IntersectionObserver rather

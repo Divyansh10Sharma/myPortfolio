@@ -41,20 +41,52 @@
 
 html {
     overflow-x: hidden;
-    /* Lenis drives scrolling in JS; this is the no-JS fallback so in-page
-       anchors still glide rather than jump. */
+    background: var(--void);
+}
+
+/* Only when JavaScript is absent. Lenis drives scrolling itself, and CSS
+   smooth scrolling actively fights it — the browser and Lenis end up
+   disagreeing about where the page is. */
+html:not(.js) {
     scroll-behavior: smooth;
+}
+
+/* Pinned to the viewport, never scrolls, sits under everything. The scroll
+   position is fed into the shader as a number instead of moving the canvas —
+   which is why the gradient can drift at its own pace rather than tracking
+   the page one-to-one. */
+#webgl {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block; /* canvas is inline by default, which leaves a descender gap */
+    z-index: 0;
+    pointer-events: none; /* never swallow a click meant for the page */
 }
 
 body {
     margin: 0;
-    background: var(--void);
+    /* Transparent, not --void: the shader canvas is behind this and an opaque
+       body would hide it completely. The <html> element keeps the solid
+       near-black, so the page is never see-through and there is still no white
+       flash before the canvas starts. */
+    background: transparent;
     color: var(--bone);
     font-family: var(--sans);
     font-weight: 400;
     line-height: 1.55;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+}
+
+/* Everything readable sits above the canvas. Without a position, a static
+   element cannot be raised by z-index at all and the canvas would paint over
+   it. */
+main,
+.foot {
+    position: relative;
+    z-index: 1;
 }
 
 a {

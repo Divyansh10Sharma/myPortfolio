@@ -1,206 +1,210 @@
 /**
- * Stage — the four objects every WebGL page needs, plus the loop that drives them.
+ * Stage — the full-screen shader background.
  *
- *   scene    the room: a list of things that are allowed to be drawn
- *   camera   where we are standing and which way we are facing
- *   renderer the thing that looks at the scene from the camera and writes pixels
- *   mesh     one object in the room: a shape (geometry) wearing a surface (material)
+ * One flat rectangle covering the viewport, wearing a fragment shader that
+ * paints a slow gradient and a film grain. It sits behind the DOM and reacts to
+ * scroll position.
  *
- * The cube here is scaffolding and gets deleted at Phase 2. Everything around it
- * — the resize handling, the reduced-motion branch, the pixel-ratio clamp and the
- * disposal — is permanent.
+ * The rectangle is a delivery mechanism, nothing more. Because the camera is
+ * orthographic and the plane is exactly the size of the view, there is no
+ * perspective, no depth and no 3D happening at all — it exists purely so the
+ * fragment shader has every pixel of the screen to write on.
  */
 
-import * as THREE from "three";
+import {
+    Clock,
+    Mesh,
+    OrthographicCamera,
+    PlaneGeometry,
+    Scene,
+    ShaderMaterial,
+    SRGBColorSpace,
+    Vector2,
+    WebGLRenderer,
+} from "three";
+import vertexShader from "../shaders/background.vert?raw";
+import fragmentShader from "../shaders/background.frag?raw";
 
-// A phone with a 3x screen would otherwise ask us to draw nine times as many
-// pixels as a 1x screen covering the same physical area, which is the fastest
-// known way to kill framerate on the mid-range Android devices we are targeting.
-// Past 2x the visual difference is very hard to see, so we cap it.
-const MAX_PIXEL_RATIO = 2;
+/**
+ * Decide once, at load, how hard we are allowed to push this device.
+ *
+ * The honest answer is that there is no reliable way to ask a browser how fast
+ * its GPU is. These are proxies, and they are wrong sometimes — a cheap phone
+ * with eight weak cores reads as capable. They are still far better than
+ * assuming every visitor is on the machine this was built on.
+ */
+function detectQuality() {
+    const cores = navigator.hardwareConcurrency || 4;
+    const memory = navigator.deviceMemory || 4; // GB, Chrome only
+    const coarse = window.matchMedia("(pointer: coarse)").matches; // touch device
+
+    const low = cores <= 4 || memory <= 4 || (coarse && window.innerWidth < 900);
+
+    return {
+        low,
+        // A 3x phone screen means nine times the pixels for the same physical
+        // area. This shader runs per pixel, so the pixel ratio is the single
+        // biggest lever we have on its cost.
+        pixelRatio: low ? 1 : Math.min(window.devicePixelRatio, 2),
+        // Half the frame rate, half the shader cost. 30fps is fine for
+        // something this slow — nobody perceives a breathing gradient as
+        // stuttering.
+        fpsCap: low ? 30 : 0, // 0 = uncapped
+        grain: low ? 0.055 : 0.075,
+    };
+}
 
 export default class Stage {
     constructor(canvas) {
         this.canvas = canvas;
+        this.quality = detectQuality();
 
-        // A clock, not a frame counter. Frames arrive at different speeds on
-        // different machines, so anything that moves is driven by seconds
-        // elapsed, never by "how many times has this function run".
-        this.clock = new THREE.Clock();
-
-        // Held so we can cancel the loop in dispose(). A loop still running
-        // after its canvas is gone is a leak that is very hard to spot later.
+        this.clock = new Clock();
         this.frameId = null;
+        this.lastDraw = 0;
 
-        // If the visitor has asked their operating system for less motion, we
-        // honour it: draw one frame and never start the loop. Checked here and
-        // on every phase from now on.
         this.prefersReducedMotion = window.matchMedia(
             "(prefers-reduced-motion: reduce)"
         ).matches;
 
         this.#buildRenderer();
         this.#buildScene();
-        this.#buildCube();
 
-        // Bound once and stored, because removeEventListener needs the exact
-        // same function reference addEventListener was given. Calling
-        // this.#onResize.bind(this) twice makes two different functions, and
-        // the listener then never actually comes off.
         this.onResize = this.#onResize.bind(this);
         window.addEventListener("resize", this.onResize);
     }
 
-    /* ── the renderer: the one that actually writes pixels ─────────────── */
-
     #buildRenderer() {
-        this.renderer = new THREE.WebGLRenderer({
+        this.renderer = new WebGLRenderer({
             canvas: this.canvas,
-
-            // Smooths the hard diagonal edges of the wireframe. Costs a little
-            // fill rate. We turn this off again at Phase 4 — once the image is
-            // passing through post-processing passes, anti-aliasing has to be
-            // done a different way anyway.
-            antialias: true,
-
-            // The page behind the canvas is already black, so we do not need a
-            // see-through canvas. An opaque one is cheaper: the GPU can skip
-            // blending this layer against whatever is underneath it.
+            // Nothing here has a hard edge — it is all soft gradient and noise —
+            // so there is nothing for anti-aliasing to smooth. Turning it off is
+            // free performance.
+            antialias: false,
             alpha: false,
+            // We never read the canvas back as an image, and telling the browser
+            // so lets it skip keeping a copy of every frame around.
+            preserveDrawingBuffer: false,
+            powerPreference: "high-performance",
         });
 
-        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_PIXEL_RATIO));
+        this.renderer.setPixelRatio(this.quality.pixelRatio);
         this.renderer.setSize(window.innerWidth, window.innerHeight);
-
-        // Tells Three the colours we hand it are meant for a normal sRGB
-        // monitor, so it converts correctly on the way out. Without this line
-        // everything renders subtly washed out — most visible in dark greys,
-        // which is the entire palette of this site.
-        this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+        this.renderer.outputColorSpace = SRGBColorSpace;
     }
-
-    /* ── the room, and where we stand in it ────────────────────────────── */
 
     #buildScene() {
-        // The scene has no rendering ability of its own. It is a list.
-        this.scene = new THREE.Scene();
+        this.scene = new Scene();
 
-        this.camera = new THREE.PerspectiveCamera(
-            45, // field of view in degrees: how wide our vision is. Small numbers
-            // are a telephoto lens (flat, distant, calm), large numbers are a
-            // fisheye (dramatic, distorted). 45 is roughly a normal lens.
-            window.innerWidth / window.innerHeight, // aspect ratio — must match
-            // the canvas or everything is stretched
-            0.1, // near: anything closer than this is not drawn
-            100 // far: anything further than this is not drawn
-        );
+        // An orthographic camera has no perspective — nothing gets smaller with
+        // distance. Set to exactly -1..1 on both axes, it maps a 2x2 plane
+        // precisely onto the screen, whatever the window size. This is the
+        // standard way to run a fragment shader over the whole viewport.
+        this.camera = new OrthographicCamera(-1, 1, 1, -1, 0, 1);
 
-        // Three's world has x to the right, y up, and z coming out of the screen
-        // towards your face. So a positive z moves the camera backwards, away
-        // from the cube sitting at the origin.
-        this.camera.position.z = 3;
+        this.geometry = new PlaneGeometry(2, 2);
 
-        this.scene.add(this.camera);
-    }
+        // Uniforms: values that are the same for every pixel this frame, set
+        // from JavaScript and read inside the shader. The shader cannot reach
+        // out and ask for anything — this object is the entire conversation.
+        this.uniforms = {
+            uTime: { value: 0 },
+            uScroll: { value: 0 },
+            uResolution: {
+                value: new Vector2(
+                    window.innerWidth * this.quality.pixelRatio,
+                    window.innerHeight * this.quality.pixelRatio
+                ),
+            },
+            uGrainStrength: { value: this.quality.grain },
+        };
 
-    /* ── the one object in the room ────────────────────────────────────── */
-
-    #buildCube() {
-        // Geometry: where the corners are. 1x1x1 units. "Units" are whatever we
-        // decide they are — there is no metre in here, only the relationship
-        // between this number and the camera's distance of 3.
-        this.geometry = new THREE.BoxGeometry(1, 1, 1);
-
-        // Material: what the surface does when it is looked at. "Basic" means it
-        // ignores light entirely and paints one flat colour. That is why there
-        // is no light anywhere in this file — a basic material would not care if
-        // there were one.
-        //
-        // wireframe draws only the edges between corners. Solid, this cube would
-        // read as a flat grey hexagon: with no light, every face returns the
-        // identical colour and the shape disappears. See GO POKE IT.
-        this.material = new THREE.MeshBasicMaterial({
-            color: 0xe9ebed, // --bone, the same off-white as the page text
-            wireframe: true,
+        this.material = new ShaderMaterial({
+            vertexShader,
+            fragmentShader,
+            uniforms: this.uniforms,
+            depthTest: false, // nothing is in front of or behind anything else
+            depthWrite: false,
         });
 
-        // Mesh: shape and surface bound together into one thing that has a
-        // position and a rotation. This is what gets added to the room.
-        this.cube = new THREE.Mesh(this.geometry, this.material);
-        this.scene.add(this.cube);
+        this.mesh = new Mesh(this.geometry, this.material);
+        this.scene.add(this.mesh);
     }
 
-    /* ── the loop ──────────────────────────────────────────────────────── */
+    /**
+     * Called from main.js on every scroll update. Takes 0–1, where 1 is the
+     * bottom of the page.
+     */
+    setScroll(progress) {
+        this.uniforms.uScroll.value = progress;
+
+        // Under reduced motion there is no loop running, so a scroll would
+        // otherwise change nothing on screen. Draw exactly one frame in
+        // response to the input the visitor actually gave us.
+        if (this.prefersReducedMotion) this.#draw();
+    }
 
     start() {
         if (this.prefersReducedMotion) {
-            // One frame, held still. The cube is visible; it does not move.
-            this.renderer.render(this.scene, this.camera);
+            // A static gradient with static grain. Still a designed background,
+            // just not a moving one.
+            this.#draw();
             return;
         }
         this.#tick();
     }
 
     #tick() {
-        // Queue the next frame BEFORE doing the work. If drawing throws, we have
-        // at least already asked for the next attempt.
         this.frameId = requestAnimationFrame(() => this.#tick());
 
-        // Seconds since the clock started. This is the wall clock — the line that
-        // makes the cube turn at the same speed on a 120Hz monitor and on a
-        // struggling phone.
         const elapsed = this.clock.getElapsedTime();
 
-        // Rotation is SET from the time, never added to. Writing
-        //     this.cube.rotation.y += 0.01
-        // means "a bit more each frame", which silently ties the speed of the
-        // animation to the speed of the machine.
-        this.cube.rotation.y = elapsed * 0.4; // 0.4 radians per second
-        this.cube.rotation.x = elapsed * 0.15; // slower tilt, so it never looks
-        // like it is spinning on a single axis
+        // Frame cap for weak devices. We still get woken every frame — that is
+        // the browser's schedule, not ours — but we skip the expensive part,
+        // which is the only part that costs anything.
+        if (this.quality.fpsCap) {
+            if (elapsed - this.lastDraw < 1 / this.quality.fpsCap) return;
+            this.lastDraw = elapsed;
+        }
 
-        // Draw the room from the camera onto the canvas. One page of the
-        // flipbook, torn off.
+        this.uniforms.uTime.value = elapsed;
+        this.#draw();
+    }
+
+    #draw() {
         this.renderer.render(this.scene, this.camera);
     }
 
-    /* ── keeping up with the window ────────────────────────────────────── */
-
     #onResize() {
-        this.camera.aspect = window.innerWidth / window.innerHeight;
-
-        // The camera caches its lens maths in a matrix and does not recompute it
-        // on its own. Change aspect without this line and nothing happens at all
-        // — a genuinely confusing bug the first time you hit it.
-        this.camera.updateProjectionMatrix();
-
-        // Re-read the pixel ratio too: dragging a window between a laptop screen
-        // and an external monitor changes it without reloading the page.
-        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_PIXEL_RATIO));
+        this.renderer.setPixelRatio(this.quality.pixelRatio);
         this.renderer.setSize(window.innerWidth, window.innerHeight);
+
+        // The shader divides by this to correct the aspect ratio. Forget to
+        // update it and the gradient stretches into an oval after a resize.
+        this.uniforms.uResolution.value.set(
+            window.innerWidth * this.quality.pixelRatio,
+            window.innerHeight * this.quality.pixelRatio
+        );
+
+        // The orthographic camera needs no update: it is fixed at -1..1 and the
+        // plane is fixed at 2x2, so the mapping is correct at any window size.
+
+        if (this.prefersReducedMotion) this.#draw();
     }
 
-    /* ── cleanup ───────────────────────────────────────────────────────── */
-
     /**
-     * Geometries, materials and textures allocate memory on the GPU, and the GPU
-     * is not reachable by JavaScript's garbage collector. Dropping the last
-     * reference to a mesh frees the JS object and leaves the vertex data sitting
-     * on the graphics card forever. Every one of them has to be released by hand.
-     *
-     * Nothing calls this yet — Phase 0 has one scene that lives as long as the
-     * page does. It starts to matter at Phase 5, where route changes create and
-     * destroy meshes repeatedly and the leak compounds until the tab dies.
+     * GPU memory is not reachable by JavaScript's garbage collector. Dropping
+     * the last reference to a mesh frees the JS object and leaves its data on
+     * the graphics card. Every geometry, material and texture has to be
+     * released by hand.
      */
     dispose() {
         if (this.frameId !== null) cancelAnimationFrame(this.frameId);
         window.removeEventListener("resize", this.onResize);
 
-        this.scene.remove(this.cube);
+        this.scene.remove(this.mesh);
         this.geometry.dispose();
         this.material.dispose();
-
-        // Releases the WebGL context itself, not only what was inside it.
         this.renderer.dispose();
     }
 }

@@ -57,6 +57,12 @@
         </style>
     </head>
     <body>
+        <!-- The shader background. aria-hidden because it is pure decoration —
+             a screen reader has nothing to say about a gradient. If WebGL fails,
+             main.js removes it and the CSS background underneath is the same
+             near-black, so nothing looks broken. -->
+        <canvas id="webgl" aria-hidden="true"></canvas>
+
         <a class="skip" href="#overview">Skip to content</a>
 
         <header class="nav">

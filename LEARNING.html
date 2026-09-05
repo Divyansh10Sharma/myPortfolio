@@ -597,6 +597,426 @@ instantly, the scroller still thinks it is somewhere else, and the next wheel mo
 teleports the page. Every in-page link on this site is routed through Lenis for that reason.</li>
 </ul>
 `
+},
+
+{
+title: "What a shader actually is",
+
+kid: `
+<p>You have a wall to paint, and two million painters.</p>
+<p>You give every single one of them the same instruction card. Not two million
+different cards — one card, copied two million times. Then you tell each painter to stand
+at their own spot on the wall, read the card, and paint the one dot in front of them. All
+at the same instant.</p>
+<p>Because the card has to work for every painter, it can't say "paint a blue circle". No
+painter can see the wall, or the circle, or anybody else. The card can only give
+instructions to <em>one</em> painter about <em>one</em> dot, and the only thing that makes
+one painter different from another is where they happen to be standing.</p>
+<p>So the card says things like: <em>"Look at where you are. Work out how far you are from
+the middle. If that's less than a hand's width, paint pale grey. Otherwise paint almost
+black."</em> Every painter follows it, each gets a different answer because each is standing
+somewhere different, and a soft grey circle appears on the wall — without a single painter
+knowing a circle was ever involved.</p>
+<p>Two consequences fall straight out of this. It's astonishingly fast, because two million
+dots get painted in the time one painter takes to read a card. And no painter can ask a
+neighbour anything, or remember what they painted last time, or look at the finished wall —
+they have no eyes and no memory. They have their position and the card. That's the whole
+job.</p>
+`,
+
+why: `
+<p>The entire background of this site is one card: the dark gradient, the glow that slides
+away as you scroll, and the film grain over everything. It costs one rectangle and one
+short file.</p>
+<p>Doing the same thing in CSS or on a 2D canvas would mean layered blurred divs or a
+per-pixel JavaScript loop, and both would visibly cost more than they are worth. This runs
+on hardware built for exactly this shape of problem.</p>
+`,
+
+translation: `
+<table>
+<tr><td>The painters</td><td><strong>fragments</strong> — roughly, pixels</td></tr>
+<tr><td>The instruction card</td><td>the <strong>fragment shader</strong></td></tr>
+<tr><td>Where a painter is standing</td><td><code>gl_FragCoord</code> and <strong>UVs</strong></td></tr>
+<tr><td>The colour they paint</td><td><code>gl_FragColor</code></td></tr>
+<tr><td>All painting at once</td><td><strong>parallelism</strong> — why the GPU is fast</td></tr>
+<tr><td>No eyes, no memory, no neighbours</td><td>fragments are <strong>independent</strong></td></tr>
+<tr><td>The language on the card</td><td><strong>GLSL</strong></td></tr>
+</table>
+<p>"Fragment" rather than "pixel" because a fragment is a <em>candidate</em> pixel — in a
+3D scene several fragments can compete for the same screen position and only one wins.
+Ours is flat, so here they are the same thing.</p>
+`,
+
+code: `
+<p>The final line of <span class="file">src/shaders/background.frag</span> is the whole
+contract — one colour, from one painter:</p>
+<pre><code>gl_FragColor = vec4(col, 1.0);   <span class="c">// red, green, blue, alpha — each 0.0 to 1.0</span></code></pre>
+<p>And the line that makes each painter different is the first one in <code>main()</code>:</p>
+<pre><code><span class="c">// Where am I? Centred on zero, and corrected so a circle is round.</span>
+vec2 p = (gl_FragCoord.xy - 0.5 * uResolution) / uResolution.y;</code></pre>
+<p>Everything between those two lines is arithmetic on <code>p</code>. Distance from a
+point, softened, bent into a falloff, mixed between two colours. There is no drawing in a
+shader — no "draw circle", no "fill rect". There is only: <em>given where I am, what
+colour am I?</em></p>
+<p>Colours are 0.0–1.0, not 0–255. Our background <code>#0B0B0C</code> is
+<code>vec3(0.043, 0.043, 0.047)</code>, which is 11/255.</p>
+`,
+
+tour: `
+<p>Read <span class="file">background.frag</span> top to bottom — it is short and it is in
+order. The uniforms at the top are the values JavaScript hands in. <code>hash()</code> is
+the grain's random generator. Inside <code>main()</code>: work out where I am, work out how
+far I am from the glow, mix two colours by that amount, add a speckle, output.</p>
+<p>The two lines actually worth your attention are the <code>p</code> line, because
+everything else depends on it, and the <code>mix()</code> line, because that is where a
+number becomes a colour.</p>
+`,
+
+poke: `
+<ol class="poke">
+<li>In <span class="file">src/shaders/background.frag</span>, find
+<code>gl_FragColor = vec4(col, 1.0);</code> and change it to
+<code>gl_FragColor = vec4(vUv, 0.0, 1.0);</code>. The screen becomes a red-green gradient.
+You are now painting each pixel's own coordinates as a colour — the clearest possible proof
+that every fragment knows only where it is. Change it back.</li>
+<li>Find <code>glow = pow(glow, 2.4);</code> and change <code>2.4</code> to <code>1.0</code>.
+The soft light becomes a flat, obvious disc. That one exponent is the difference between
+"there is a light source" and "there is a grey circle".</li>
+<li>Change <code>const vec3 LIFT</code> to <code>vec3(0.9, 0.2, 0.1)</code>. The glow turns
+hot orange and the whole page instantly looks like a different website. Undo it — but note
+how little had to change.</li>
+</ol>
+`,
+
+breaks: `
+<ul>
+<li><strong>Pure black screen, no error on the page.</strong> Almost always a shader that
+failed to compile. Open the console: WebGL prints the GLSL error with a line number, and it
+is usually the next item on this list.</li>
+<li><strong>Integers where floats belong.</strong> GLSL will not quietly convert.
+<code>pow(glow, 2)</code> is an error; it must be <code>2.0</code>. Likewise
+<code>vec3(0)</code> should be <code>vec3(0.0)</code>. This is the single most common
+beginner error and the message is not always obvious.</li>
+<li><strong>Expecting to debug it.</strong> There is no <code>console.log</code> in a
+shader, no breakpoints, no stepping. The way you inspect a value is to paint it:
+<code>gl_FragColor = vec4(vec3(myValue), 1.0);</code> and look at the resulting greyscale.
+That is genuinely the standard technique, not a hack.</li>
+</ul>
+`
+},
+
+{
+title: "Vertex vs fragment, and what UVs are",
+
+kid: `
+<p>Hanging a bedsheet on a wall takes two completely different jobs.</p>
+<p><strong>Job one</strong> is four people holding the four corners, deciding where each
+corner goes. That's it — four decisions, done once. Nobody is looking at the pattern on the
+sheet; they are just holding corners.</p>
+<p><strong>Job two</strong> is what the sheet actually looks like, at every point across
+it. That's the two million painters from the last page.</p>
+<p>Now the useful bit. Suppose the corner-holders each write a number on their corner:
+bottom-left writes 0, top-right writes 1. Anyone standing anywhere on the sheet can now work
+out their own number by seeing how far they are between the corners — a quarter of the way
+across is 0.25, halfway is 0.5. Nobody had to tell them. It falls out of the corners
+automatically.</p>
+<p>That's the trick that makes the whole thing work: <em>a handful of values decided at the
+corners, smoothly filled in everywhere between.</em> Four decisions become two million,
+free.</p>
+`,
+
+why: `
+<p>Our background is exactly this bedsheet: four corners that never move, and a fragment
+shader doing all the real work across them. That's why
+<span class="file">background.vert</span> is nine lines and does nothing interesting.</p>
+<p>The blending is what makes the gradient smooth. Nothing computes "the gradient" — each
+pixel independently computes its own spot on it.</p>
+`,
+
+translation: `
+<table>
+<tr><td>The people holding corners</td><td>the <strong>vertex shader</strong>, run once per corner</td></tr>
+<tr><td>A corner</td><td>a <strong>vertex</strong></td></tr>
+<tr><td>The painters across the sheet</td><td>the <strong>fragment shader</strong>, run per pixel</td></tr>
+<tr><td>The number written on each corner</td><td>a <strong>varying</strong></td></tr>
+<tr><td>Filling in the values between corners</td><td><strong>interpolation</strong></td></tr>
+<tr><td>"How far across the sheet am I", 0 to 1</td><td><strong>UV coordinates</strong></td></tr>
+</table>
+<p>UVs are just called that because x, y and z were already taken by 3D positions, so the
+letters u and v got the job of naming positions on a surface. A UV of (0,0) is one corner,
+(1,1) is the opposite one, and the numbers stay 0–1 whether the thing is displayed at 300
+pixels wide or 3000.</p>
+<p><strong>Vertex runs a handful of times. Fragment runs millions of times.</strong> Any
+work you can move up to the vertex shader is nearly free by comparison. Our rectangle has
+four vertices and roughly two million fragments — a ratio of half a million to one.</p>
+`,
+
+code: `
+<p>The entire useful content of <span class="file">src/shaders/background.vert</span>:</p>
+<pre><code>varying vec2 vUv;   <span class="c">// declared in BOTH files, same name, same type</span>
+
+void main() {
+  vUv = uv;         <span class="c">// uv is handed to us by Three.js, per corner</span>
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}</code></pre>
+<p>And in <span class="file">background.frag</span>, the matching declaration:</p>
+<pre><code>varying vec2 vUv;   <span class="c">// arrives already blended for this exact pixel</span></code></pre>
+<p>Write it at four corners, read it at two million pixels, and the GPU does the filling-in
+in dedicated hardware. The <code>v</code> prefix is a convention meaning "this is a
+varying", and it is worth keeping — in a bigger shader it is the fastest way to know where
+a value came from.</p>
+<p>Our fragment shader mostly uses <code>gl_FragCoord</code> instead, which is the pixel's
+position in actual screen pixels rather than 0–1 across the sheet. For a full-screen effect
+that needs to know the real aspect ratio, screen pixels are the more direct question to ask.</p>
+`,
+
+tour: `
+<p>Open both shader files side by side and look only at the <code>varying vec2 vUv;</code>
+line in each. That one duplicated declaration is the entire pipe between the two stages. If
+the names or types don't match exactly, the link fails — and the error message points at
+the shader, not at the mismatch.</p>
+`,
+
+poke: `
+<ol class="poke">
+<li>In <span class="file">background.frag</span>, temporarily set
+<code>gl_FragColor = vec4(vUv.x, 0.0, 0.0, 1.0);</code>. Black on the left, red on the
+right — you are looking directly at interpolation doing its job. Try <code>vUv.y</code> for
+the vertical version.</li>
+<li>In <span class="file">background.vert</span>, change <code>vUv = uv;</code> to
+<code>vUv = uv * 3.0;</code>, with the debug line above still in place. The gradient now
+runs 0→3 across the sheet, so it hits full red a third of the way over and stays there.
+Multiplying UVs is how tiling and repetition are done.</li>
+<li>In <span class="file">background.frag</span>, find the <code>p</code> line and remove
+the aspect correction — divide by <code>uResolution</code> instead of
+<code>uResolution.y</code>. The glow squashes into an oval on a wide window. That single
+<code>.y</code> is the whole fix.</li>
+</ol>
+`,
+
+breaks: `
+<ul>
+<li><strong>Mismatched varyings.</strong> Declared <code>vec2</code> in one file and
+<code>vec3</code> in the other, or spelled differently — the program fails to link and you
+get a black screen with a message about the shader rather than about the mismatch.</li>
+<li><strong>Expecting UVs in pixels.</strong> They are 0–1, always. If you want pixels, use
+<code>gl_FragCoord</code> or multiply the UVs by the resolution yourself.</li>
+<li><strong>Doing fragment work in the fragment shader that could be done at the
+vertices.</strong> Not wrong, just expensive — you are paying half a million times over for
+a result that would have blended perfectly well.</li>
+</ul>
+`
+},
+
+{
+title: "Uniforms — the only way to talk to the GPU",
+
+kid: `
+<p>Back to the two million painters, all holding the same card. The card is printed. You
+cannot hand out two million new cards every time something changes.</p>
+<p>But you do need to tell them things. The clock has ticked. The visitor has scrolled
+halfway down. The wall is a different size than it was.</p>
+<p>So above the painters there is a small noticeboard that every single one of them can see
+from where they stand. You can change what's pinned to it whenever you like. The card can
+say <em>"read the time off the noticeboard and use it"</em>, and all two million read the
+same value at the same instant.</p>
+<p>Two rules about the noticeboard, and they matter. It is <strong>read-only</strong> for
+the painters — they can look, never write. And it is <strong>the same for everybody</strong>:
+it can't say a different thing to the painter in the corner than to the one in the middle.
+That's exactly what makes it safe for two million to read at once with nobody queueing.</p>
+`,
+
+why: `
+<p>Without uniforms our background would be a still image. The gradient breathes because
+<code>uTime</code> is repinned every frame, and it slides as you scroll because
+<code>uScroll</code> is repinned on every scroll event.</p>
+<p>This is also the seam between the two halves of the project: JavaScript knows about
+scrolling and the DOM, the shader knows about pixels, and uniforms are the only place they
+meet.</p>
+`,
+
+translation: `
+<table>
+<tr><td>The noticeboard</td><td><strong>uniforms</strong></td></tr>
+<tr><td>Same value for every painter</td><td>"uniform" — that is literally why it is called that</td></tr>
+<tr><td>Read-only for the painters</td><td>a shader cannot write to a uniform</td></tr>
+<tr><td>Pinning up a new value</td><td><code>uniforms.uTime.value = elapsed</code></td></tr>
+<tr><td>What each painter works out alone</td><td>a local <code>vec3</code>, gone at the end of the pixel</td></tr>
+</table>
+<p>Worth holding onto the three-way distinction: an <strong>attribute</strong> differs per
+vertex, a <strong>varying</strong> is passed from vertex to fragment and blended on the way,
+and a <strong>uniform</strong> is the same for everything in the whole draw.</p>
+`,
+
+code: `
+<p>Declared in <span class="file">src/webgl/Stage.js</span> — this object is the JavaScript
+side of the noticeboard, and it is handed to the material once:</p>
+<pre><code>this.uniforms = {
+  uTime:          { value: 0 },
+  uScroll:        { value: 0 },
+  uResolution:    { value: new Vector2(w, h) },
+  uGrainStrength: { value: this.quality.grain },
+};</code></pre>
+<p>Matched at the top of <span class="file">background.frag</span> by name and type:</p>
+<pre><code>uniform float uTime;
+uniform float uScroll;
+uniform vec2  uResolution;
+uniform float uGrainStrength;</code></pre>
+<p>Updated in the loop, and on scroll:</p>
+<pre><code>this.uniforms.uTime.value = elapsed;             <span class="c">// in Stage.js, every frame</span>
+
+lenis.on("scroll", ({ progress }) =&gt; stage?.setScroll(progress));  <span class="c">// in main.js</span></code></pre>
+<p>Notice what crosses that boundary: one number between 0 and 1. The shader has no idea
+how tall the page is, what Lenis is, or that a DOM exists. Keeping the seam that narrow is
+why the shader stayed simple.</p>
+`,
+
+tour: `
+<p>You are mutating <code>.value</code>, not replacing the uniform object. Three.js holds a
+reference to that object and uploads whatever it finds inside it each frame — assign a
+whole new object over the top and the link is broken, silently.</p>
+<p>The <code>u</code> prefix is a convention, and CLAUDE.md asks for descriptive names for
+good reason: <code>uDistortionStrength</code> tells you what a number does six weeks later,
+<code>u1</code> does not.</p>
+`,
+
+poke: `
+<ol class="poke">
+<li>With the site running, open the console and type
+<code>stage.uniforms.uScroll.value = 1.0</code>. The glow jumps to where it would be at the
+bottom of the page, without scrolling. You are pinning something to the noticeboard by
+hand.</li>
+<li>Try <code>stage.uniforms.uGrainStrength.value = 0.5</code>. The page turns to heavy
+television static. Then <code>0</code> — and look closely at the gradient: you should see
+faint stripes where the colour steps. That banding is what the grain exists to hide.</li>
+<li>In <span class="file">background.frag</span>, find
+<code>sin(uTime * 0.06) * 0.05</code> and change it to
+<code>sin(uTime * 0.9) * 0.35</code>. The background now visibly pulses and looks cheap.
+The original numbers are deliberately just above "is that even moving?" — that restraint is
+the difference between calm and busy.</li>
+</ol>
+`,
+
+breaks: `
+<ul>
+<li><strong>Declared but never used.</strong> GLSL compilers strip out any uniform the code
+does not actually reference, so setting it from JavaScript appears to do nothing. If a
+uniform seems ignored, first check the shader really uses it.</li>
+<li><strong>Type mismatch.</strong> A <code>float</code> uniform fed a <code>Vector2</code>,
+or the reverse. Sometimes silent, sometimes a black screen.</li>
+<li><strong>Forgetting to update on resize.</strong> <code>uResolution</code> has to be
+re-set whenever the canvas changes size, or every aspect-ratio calculation downstream is
+wrong — see the resize handler in <span class="file">Stage.js</span>.</li>
+<li><strong>Replacing the uniforms object.</strong> <code>material.uniforms = {...}</code>
+after the material is built breaks the reference Three is holding. Always write to
+<code>.value</code>.</li>
+</ul>
+`
+},
+
+{
+title: "Noise, grain, and why there is no random()",
+
+kid: `
+<p>Ask two million painters to each pick a random colour and you have a problem: none of
+them can talk to each other, none of them remembers anything, and every one of them would
+have to be handed their own dice. Randomness needs memory — a place to keep "what did I roll
+last time" — and these painters have none.</p>
+<p>So you cheat, with a rule that <em>looks</em> random but isn't.</p>
+<p>Imagine a rule like: <em>take the numbers of the row and column you're standing on,
+multiply them by two very awkward numbers, and keep only the digits after the decimal
+point.</em> Standing at row 12, column 7 always gives the same answer, every time, for
+anyone. It's completely predictable. But move one step sideways and the awkward
+multiplication throws the answer somewhere else entirely — so laid out across the wall, the
+values scatter with no visible pattern.</p>
+<p>That's the trick. Not random at all — just a rule so twitchy that neighbouring positions
+land on unrelated results. Add a pinch of the current time to what you feed it, and the
+whole speckle reshuffles every frame.</p>
+`,
+
+why: `
+<p>Grain does two jobs here. It unifies the page the way film grain unifies a photograph —
+it is the cheapest way to stop a flat dark background looking like an empty CSS div.</p>
+<p>And it fixes a real technical problem. Screens store 256 levels per colour channel. A
+gradient this dark and this gradual doesn't have enough of them, so it shows visible
+stripes. Scattering each pixel slightly breaks the stripes into texture your eye reads as
+smooth.</p>
+`,
+
+translation: `
+<table>
+<tr><td>The twitchy rule</td><td>a <strong>hash</strong> function</td></tr>
+<tr><td>Looks random, is repeatable</td><td><strong>deterministic</strong> / pseudo-random</td></tr>
+<tr><td>Keeping the digits after the point</td><td><code>fract()</code></td></tr>
+<tr><td>The awkward numbers</td><td>hash constants — folklore, tuned by eye</td></tr>
+<tr><td>Visible stripes in a gradient</td><td><strong>banding</strong></td></tr>
+<tr><td>Scattering pixels to hide stripes</td><td><strong>dithering</strong></td></tr>
+</table>
+<p>This kind — every pixel independent, pure static — is <strong>white noise</strong>. There
+is a smoother family called <strong>value</strong> or <strong>Perlin</strong> noise, which
+blends between random values on a grid to make clouds, smoke and terrain. Same principle,
+more arithmetic. Film grain wants the cheap kind.</p>
+`,
+
+code: `
+<p>From <span class="file">src/shaders/background.frag</span>:</p>
+<pre><code><span class="c">// Give it a position, get back a repeatable 0–1 that looks random.</span>
+<span class="c">// The constants are folklore — chosen so neighbouring pixels land</span>
+<span class="c">// on wildly different results.</span>
+float hash(vec2 p) {
+    p = fract(p * vec2(123.34, 456.21));
+    p += dot(p, p + 45.32);
+    return fract(p.x * p.y);
+}</code></pre>
+<pre><code><span class="c">// fract(uTime * 60.0) reshuffles the pattern every frame. Feeding raw</span>
+<span class="c">// uTime would make it drift smoothly — which reads as crawling insects</span>
+<span class="c">// rather than grain.</span>
+float grain = hash(gl_FragCoord.xy + fract(uTime * 60.0) * 100.0);
+col += (grain - 0.5) * uGrainStrength;</code></pre>
+<p>The <code>- 0.5</code> matters. <code>hash</code> returns 0 to 1, so subtracting a half
+gives −0.5 to +0.5: as many pixels darkened as brightened, and the average brightness of the
+page is unchanged. Without it the grain would wash the whole background lighter.</p>
+`,
+
+tour: `
+<p>Three lines, three jobs. <code>hash()</code> makes the speckle.
+<code>fract(uTime * 60.0)</code> makes it move. <code>(grain - 0.5) * uGrainStrength</code>
+centres it on zero and scales it down to something you feel rather than see.</p>
+<p>The strength is set per device in <span class="file">Stage.js</span> —
+<code>0.075</code> normally, <code>0.055</code> on a weak one, where the shader is already
+running at half rate and heavy grain would strobe.</p>
+`,
+
+poke: `
+<ol class="poke">
+<li>In <span class="file">background.frag</span>, change <code>fract(uTime * 60.0)</code>
+to just <code>uTime</code>. The grain stops reshuffling and starts sliding — a slow crawl
+that is genuinely unpleasant. Good evidence that "how it changes over time" matters as much
+as the noise itself.</li>
+<li>Change the hash constants <code>vec2(123.34, 456.21)</code> to
+<code>vec2(12.0, 78.0)</code>. Rounder numbers are less twitchy, so neighbouring pixels
+land on related values and a faint diagonal pattern appears. That is why the ugly constants
+are ugly.</li>
+<li>Set <code>uGrainStrength</code> to <code>0.0</code> in <span class="file">Stage.js</span>
+and look hard at the glow's edge on a good screen in a dark room. Faint concentric rings —
+that is banding. Put the grain back and they vanish.</li>
+</ol>
+`,
+
+breaks: `
+<ul>
+<li><strong>Grain that crawls instead of flickering.</strong> The time input is changing
+smoothly rather than jumping. Wrap it in <code>fract()</code> or multiply it up first.</li>
+<li><strong>Visible repeating patterns.</strong> The hash constants are too well-behaved, or
+the input has been rounded before it reaches them. Noise wants awkward numbers.</li>
+<li><strong>Grain that brightens the page.</strong> Adding a 0–1 value instead of a −0.5 to
++0.5 one. Everything gets lighter and you will be tempted to fix it by darkening the base
+colour, which is treating the symptom.</li>
+<li><strong>Too much of it.</strong> Above roughly 0.1 it stops reading as film and starts
+reading as a broken screen — and on a phone at half frame rate it strobes.</li>
+</ul>
+`
 }
 
 ];
