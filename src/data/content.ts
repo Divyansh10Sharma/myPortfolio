@@ -58,9 +58,9 @@ export const profile = {
         "https://drive.google.com/file/d/1MbxOlm460Ac9LdPARNcP_0GITvXLxAs_/view?usp=sharing",
 } as const;
 
-/** CONTENT.md: four words on purpose, and the biggest type on the site. */
+/** CONTENT.md: short on purpose, and the biggest type on the site. */
 export const hero = {
-    headline: "Five codebases. One engineer.",
+    headline: "Backend & AI Engineer",
     sub: "Backend, AI, and native systems at Train Rex — from a multi-agent coaching model to a step counter that reconciles against itself every fifty steps.",
 } as const;
 

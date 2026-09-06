@@ -13,8 +13,12 @@ applies — do not invent copy that isn't in one of these two places.
 **Headline** (this is the one, use it):
 
 ```
-Five codebases. One engineer.
+Backend & AI Engineer
 ```
+
+Changed from "Five codebases. One engineer." on 2026-09-06, at my request. The
+replacement is the role title, lifted verbatim from `profile.role` in the old
+site's data file — it is not new copy.
 
 **Sub-line** (sits under the headline, smaller):
 
@@ -24,7 +28,7 @@ model to a step counter that reconciles against itself every fifty steps.
 ```
 
 Notes for you:
-- The headline is four words on purpose. It needs to be very large — this is the
+- The headline is short on purpose. It needs to be very large — this is the
   single biggest type on the site, roughly 8vw, and it should hold the screen
   alone with a lot of empty space around it.
 - The sub-line carries the specificity so the headline doesn't have to. Don't
