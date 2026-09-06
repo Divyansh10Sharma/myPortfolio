@@ -1,0 +1,927 @@
+/* ============================================================
+   The Huly experiment — component styles.
+
+   Every value here resolves to a token in tokens.css. Where DESIGN.md gave a
+   rule rather than a number ("pill geometry is the system's signature shape",
+   "never blend dark and light in one component") the rule is written into the
+   structure, not left to be remembered.
+
+   The one structural idea worth knowing before reading: the page is a stack of
+   BANDS, and a band declares whether it is dark or light. Every colour inside
+   it is then inherited from that decision rather than chosen locally. That is
+   DESIGN.md's "pick a background mode first" turned into something the CSS
+   actually enforces.
+   ============================================================ */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: var(--font-inter);
+    font-size: var(--text-body);
+    line-height: var(--leading-body);
+    letter-spacing: var(--tracking-body);
+    background: var(--surface-void);
+    color: var(--text-on-dark);
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ── bands ────────────────────────────────────────────────────
+   A band owns its background AND the two text colours that go with it. The
+   `--band-*` custom properties are the mechanism: children read them, so a
+   card never needs to know which kind of section it landed in. */
+
+.band {
+    position: relative;
+    padding-block: var(--spacing-160);
+    background: var(--band-bg);
+    color: var(--band-text);
+}
+
+.band--void {
+    --band-bg: var(--surface-void);
+    --band-text: var(--text-on-dark);
+    --band-muted: var(--color-ash);
+    --band-faint: var(--color-smoke);
+    --band-rule: var(--color-slate-edge);
+}
+
+.band--canvas {
+    --band-bg: var(--surface-obsidian-canvas);
+    --band-text: var(--text-on-dark);
+    --band-muted: var(--color-frost);
+    --band-faint: var(--color-linen);
+    --band-rule: var(--color-iron-veil);
+}
+
+.band--light {
+    --band-bg: var(--surface-light-canvas);
+    --band-text: var(--text-on-light);
+    --band-muted: var(--color-obsidian-canvas);
+    --band-faint: var(--color-iron-veil);
+    --band-rule: var(--color-frost);
+}
+
+.band--linen {
+    --band-bg: var(--surface-linen);
+    --band-text: var(--text-on-light);
+    --band-muted: var(--color-obsidian-canvas);
+    --band-faint: var(--color-iron-veil);
+    --band-rule: var(--color-frost);
+}
+
+.band--tight {
+    padding-block: var(--spacing-64);
+}
+
+.shell {
+    position: relative;
+    z-index: 1;
+    max-width: var(--page-max-width);
+    margin: 0 auto;
+    padding-inline: var(--spacing-24);
+}
+
+/* ── typography ───────────────────────────────────────────── */
+
+.display {
+    margin: 0;
+    font-family: var(--font-esbuild);
+    font-weight: var(--font-weight-medium);
+    font-size: clamp(44px, 8vw, var(--text-display));
+    line-height: var(--leading-display);
+    /* Tracking compresses with size, so it cannot be a fixed px value at every
+       breakpoint — at 44px, -4px would collide the letters. */
+    letter-spacing: clamp(-4px, -0.05em, -2px);
+}
+
+.display-sm {
+    margin: 0;
+    font-family: var(--font-esbuild);
+    font-weight: 500;
+    font-size: clamp(28px, 4vw, var(--text-display-sm));
+    line-height: var(--leading-display-sm);
+    letter-spacing: var(--tracking-display-sm);
+}
+
+/* 28px is the floor for the display face. DESIGN.md is explicit that Esbuild
+   below this crushes into itself, so anything smaller uses Inter instead. */
+.heading {
+    margin: 0;
+    font-family: var(--font-esbuild);
+    font-weight: 500;
+    font-size: var(--spacing-28);
+    line-height: var(--leading-heading);
+    letter-spacing: -0.02em;
+}
+
+.subheading {
+    margin: 0;
+    font-size: var(--text-subheading);
+    line-height: var(--leading-subheading);
+    letter-spacing: var(--tracking-subheading);
+    font-weight: var(--font-weight-regular);
+}
+
+.body-lg {
+    margin: 0;
+    font-size: var(--text-body-lg);
+    line-height: var(--leading-body-lg);
+    letter-spacing: var(--tracking-body-lg);
+}
+
+.caption {
+    margin: 0;
+    font-size: var(--text-caption);
+    line-height: var(--leading-caption);
+    letter-spacing: var(--tracking-caption);
+    font-weight: var(--font-weight-medium);
+    text-transform: uppercase;
+}
+
+.muted {
+    color: var(--band-muted);
+}
+
+.faint {
+    color: var(--band-faint);
+}
+
+/* ── section header ───────────────────────────────────────── */
+
+.section-head {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-16);
+    max-width: 640px;
+    margin-bottom: var(--section-gap);
+}
+
+.section-head__eyebrow {
+    color: var(--color-electric-iris);
+}
+
+/* ── buttons ──────────────────────────────────────────────────
+   Three treatments, one geometry. The 9999px radius is not decoration here —
+   DESIGN.md calls pill geometry the system's signature shape, so it is the
+   single thing every control has in common. */
+
+.pill {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-8);
+    border-radius: var(--radius-buttons);
+    font-family: var(--font-inter);
+    font-size: var(--text-body);
+    font-weight: var(--font-weight-medium);
+    letter-spacing: -0.01em;
+    line-height: 1;
+    text-decoration: none;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease,
+        box-shadow 0.3s ease,
+        transform 0.2s ease;
+}
+
+.pill:active {
+    transform: translateY(1px);
+}
+
+.pill--primary {
+    padding: var(--spacing-12) var(--spacing-24);
+    background: var(--color-electric-iris);
+    color: var(--color-snow);
+}
+
+.pill--primary:hover {
+    /* "Inherits Electric Iris glow on hover" — the glow is the accent colour
+       itself, spread, rather than a black drop shadow. */
+    box-shadow: 0 0 0 1px rgba(86, 131, 218, 0.5), 0 6px 28px rgba(86, 131, 218, 0.45);
+}
+
+.pill--white {
+    padding: var(--spacing-12) var(--spacing-24);
+    background: var(--color-snow);
+    color: var(--color-void);
+}
+
+.pill--white:hover {
+    box-shadow: 0 6px 28px rgba(255, 255, 255, 0.22);
+}
+
+.pill--ghost {
+    padding: var(--spacing-12) var(--spacing-20);
+    background: transparent;
+    border-color: var(--color-slate-edge);
+    color: var(--band-text);
+}
+
+.pill--ghost:hover {
+    background: var(--color-charcoal-card);
+    border-color: var(--color-iron-veil);
+    color: var(--color-snow);
+}
+
+/* On a light band a charcoal hover fill would be a dark rectangle appearing
+   out of nowhere, so the ghost pill inverts instead. */
+.band--light .pill--ghost:hover,
+.band--linen .pill--ghost:hover {
+    background: var(--color-void);
+    border-color: var(--color-void);
+}
+
+.band--light .pill--ghost,
+.band--linen .pill--ghost {
+    border-color: var(--color-frost);
+}
+
+/* ...unless it is inside a card, which is its own dark surface. Higher
+   specificity than the two band rules above, deliberately: the card wins. */
+.band--light .card .pill--ghost,
+.band--linen .card .pill--ghost {
+    border-color: var(--color-slate-edge);
+}
+
+.band--light .card .pill--ghost:hover,
+.band--linen .card .pill--ghost:hover {
+    background: var(--color-obsidian-canvas);
+    border-color: var(--color-iron-veil);
+}
+
+.pill__arrow {
+    transition: transform 0.2s ease;
+}
+
+.pill:hover .pill__arrow {
+    transform: translateX(3px);
+}
+
+/* ── tags ─────────────────────────────────────────────────────
+   Background is the category colour at 12%, text at full saturation. Both come
+   from one `--tag-color`, so a new category is one custom property. */
+
+.tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-8);
+}
+
+.tag {
+    --tag-color: var(--color-smoke);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-4);
+    padding: var(--spacing-4) 10px;
+    border-radius: var(--radius-tags);
+    font-size: var(--text-caption);
+    line-height: var(--leading-caption);
+    letter-spacing: var(--tracking-caption);
+    font-weight: var(--font-weight-medium);
+    color: var(--tag-color);
+    background: color-mix(in srgb, var(--tag-color) 12%, transparent);
+    white-space: nowrap;
+}
+
+.tag--iris {
+    --tag-color: var(--color-electric-iris);
+}
+
+.tag--ember {
+    --tag-color: var(--color-ember-pulse);
+}
+
+.tag--ash {
+    --tag-color: var(--color-ash);
+}
+
+.band--light .tag--ash,
+.band--linen .tag--ash {
+    --tag-color: var(--color-iron-veil);
+}
+
+/* Tag contrast on light bands.
+
+   DESIGN.md's tag recipe — "text colored to match category at full saturation,
+   background at 12% opacity" — was written for dark surfaces, and it fails on
+   white: Ember Pulse on near-white is about 2.3:1 and Electric Iris about
+   3.5:1, both well under the 4.5:1 that 11px text needs. The spec's own
+   Don'ts anticipate this ("never without checking contrast — the dark palette
+   has narrow readable bands"), so this darkens the TEXT toward the void while
+   leaving the coloured tint alone. The category is still legible as colour;
+   the words are now legible as words.
+
+   A card is a dark surface even on a light band, so it is excluded. */
+.band--light :not(.card) > .tags .tag,
+.band--linen :not(.card) > .tags .tag,
+.band--light .tags > .tag,
+.band--linen .tags > .tag {
+    color: color-mix(in srgb, var(--tag-color) 62%, var(--color-void));
+    background: color-mix(in srgb, var(--tag-color) 15%, transparent);
+}
+
+.band--light .card .tags > .tag,
+.band--linen .card .tags > .tag {
+    color: var(--tag-color);
+    background: color-mix(in srgb, var(--tag-color) 12%, transparent);
+}
+
+.tag__dot {
+    width: 6px;
+    height: 6px;
+    border-radius: var(--radius-full);
+    background: currentColor;
+}
+
+/* ── cards ────────────────────────────────────────────────── */
+
+.grid {
+    display: grid;
+    gap: var(--spacing-24);
+}
+
+.grid--3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.grid--2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+/* Reveal wraps each card in a div, which would otherwise collapse to the
+   card's natural height and leave short cards floating in a tall grid row. */
+.grid > .reveal {
+    height: 100%;
+}
+
+.card {
+    /* A card is a DARK CONTEXT wherever it lands.
+
+       This is the one place the band model needed a second rule. DESIGN.md's
+       signature move is a #111111 card on a white section, and the moment that
+       happens the band's text colours are wrong for everything inside the card
+       — a ghost pill inherited near-black text and became invisible against
+       the card it was sitting on. Re-declaring the band variables here means
+       the card carries its own mode with it, exactly as a band does. */
+    --band-text: var(--text-on-dark);
+    --band-muted: var(--color-ash);
+    --band-faint: var(--color-smoke);
+    --band-rule: var(--color-slate-edge);
+
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--element-gap);
+    padding: var(--card-padding);
+    border-radius: var(--radius-cards);
+    border: 1px solid var(--color-slate-edge);
+    background: var(--surface-charcoal-card);
+    color: var(--text-on-dark);
+    overflow: hidden;
+    /* No drop shadow. DESIGN.md is explicit: dark cards get borders and colour
+       contrast for elevation, never shadows. */
+    transition:
+        border-color 0.25s ease,
+        transform 0.25s ease;
+}
+
+.card:hover {
+    border-color: var(--color-iron-veil);
+    transform: translateY(-2px);
+}
+
+/* The radial sunburst bleed. Warmth in a corner, well under the opacity the
+   hero aurora runs at, so the two never compete for the same viewport. */
+.card--glow::after {
+    content: "";
+    position: absolute;
+    top: -120px;
+    right: -120px;
+    width: 320px;
+    height: 320px;
+    background: radial-gradient(
+        circle,
+        rgba(255, 170, 129, 0.4),
+        rgba(255, 218, 159, 0.18) 35%,
+        transparent 68%
+    );
+    pointer-events: none;
+}
+
+.card--glow-iris::after {
+    background: radial-gradient(
+        circle,
+        rgba(86, 131, 218, 0.4),
+        rgba(86, 131, 218, 0.12) 40%,
+        transparent 70%
+    );
+}
+
+.card__index {
+    color: var(--color-smoke);
+    letter-spacing: 0.08em;
+}
+
+.card__title {
+    color: var(--color-snow);
+}
+
+.card__body {
+    margin: 0;
+    color: var(--color-ash);
+}
+
+.card__foot {
+    margin-top: auto;
+    padding-top: var(--spacing-16);
+}
+
+/* ── nav ──────────────────────────────────────────────────── */
+
+.nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    background: transparent;
+    border-bottom: 1px solid transparent;
+    transition:
+        background-color 0.3s ease,
+        border-color 0.3s ease,
+        backdrop-filter 0.3s ease;
+}
+
+.nav.is-stuck {
+    background: rgba(9, 10, 12, 0.72);
+    backdrop-filter: blur(12px);
+    border-bottom-color: var(--color-slate-edge);
+}
+
+.nav__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-24);
+    max-width: var(--page-max-width);
+    margin: 0 auto;
+    padding: var(--spacing-16) var(--spacing-24);
+}
+
+.nav__mark {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+    text-decoration: none;
+    color: var(--color-snow);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: -0.02em;
+}
+
+.nav__links {
+    display: flex;
+    gap: var(--spacing-24);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.nav__links a {
+    color: var(--color-snow);
+    text-decoration: none;
+    font-size: var(--text-body);
+    font-weight: var(--font-weight-regular);
+    opacity: 0.72;
+    transition: opacity 0.2s ease;
+}
+
+.nav__links a:hover {
+    opacity: 1;
+}
+
+.nav__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--element-gap);
+}
+
+.nav__text-link {
+    color: var(--color-snow);
+    text-decoration: none;
+    font-size: var(--text-body);
+    opacity: 0.72;
+    transition: opacity 0.2s ease;
+}
+
+.nav__text-link:hover {
+    opacity: 1;
+}
+
+/* ── hero ─────────────────────────────────────────────────────
+   The one place the aurora is allowed to appear. DESIGN.md: once per page,
+   never as a full-surface fill. */
+
+.hero {
+    position: relative;
+    min-height: 100svh;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    background: var(--surface-void);
+    padding-block: var(--spacing-160) var(--spacing-64);
+}
+
+.aurora {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.aurora__beam {
+    position: absolute;
+    top: -12%;
+    /* Right of the headline, not behind it. The content block is left-aligned
+       in a 1200px shell, so a centred beam puts its hottest point straight
+       through the type and costs the headline its contrast. */
+    left: 72%;
+    width: 20%;
+    height: 118%;
+    transform: translateX(-50%) rotate(7deg);
+    background: linear-gradient(
+        180deg,
+        rgba(86, 131, 218, 0) 0%,
+        rgba(86, 131, 218, 0.6) 26%,
+        rgba(255, 137, 100, 0.9) 72%,
+        rgba(255, 255, 255, 0.95) 100%
+    );
+    /* The blur is what makes it read as light rather than as a painted stripe.
+       Nothing about the gradient itself would survive a hard edge. */
+    filter: blur(64px);
+    animation: aurora-drift 18s ease-in-out infinite alternate;
+}
+
+.aurora__sunburst {
+    position: absolute;
+    left: 72%;
+    bottom: -34%;
+    width: min(920px, 90vw);
+    aspect-ratio: 1;
+    transform: translateX(-50%);
+    background: radial-gradient(
+        circle,
+        rgba(255, 170, 129, 0.34),
+        rgba(255, 218, 159, 0.16) 34%,
+        transparent 68%
+    );
+    filter: blur(24px);
+}
+
+@keyframes aurora-drift {
+    from {
+        transform: translateX(-50%) rotate(7deg) translateY(0);
+    }
+    to {
+        transform: translateX(-50%) rotate(4deg) translateY(-3%);
+    }
+}
+
+.hero__inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-32);
+    max-width: 760px;
+}
+
+/* A lone tag inside a flex COLUMN stretches to the column's full width, which
+   turns a pill into a bar across the hero. Tags inside `.tags` are safe — that
+   is a flex row — so this only applies to one standing on its own. */
+.hero__inner > .tag {
+    align-self: flex-start;
+}
+
+.hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--element-gap);
+}
+
+/* ── stats ────────────────────────────────────────────────── */
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--spacing-24);
+}
+
+.stat__value {
+    font-family: var(--font-esbuild);
+    font-size: var(--text-display-sm);
+    line-height: var(--leading-display-sm);
+    letter-spacing: var(--tracking-display-sm);
+    color: var(--color-snow);
+}
+
+.band--light .stat__value,
+.band--linen .stat__value {
+    color: var(--text-on-light);
+}
+
+.stat__label {
+    margin-top: var(--spacing-8);
+    color: var(--band-muted);
+}
+
+/* ── about ────────────────────────────────────────────────── */
+
+.about {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: var(--spacing-64);
+    align-items: start;
+}
+
+.about__copy > * + * {
+    margin-top: var(--spacing-20);
+}
+
+/* The screenshot-frame treatment from DESIGN.md, applied to the one photograph
+   the site has. It is the only place a shadow appears, and it is the exact
+   shadow the spec reserves for framed media. */
+.frame {
+    border-radius: var(--radius-cards);
+    overflow: hidden;
+    box-shadow: var(--shadow-xl);
+    background: var(--surface-charcoal-card);
+}
+
+.frame img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.about__meta {
+    margin-top: var(--spacing-20);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-8);
+}
+
+/* ── list rows (work) ─────────────────────────────────────── */
+
+.rows {
+    display: flex;
+    flex-direction: column;
+}
+
+.row {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: var(--spacing-24);
+    padding-block: var(--spacing-32);
+    border-top: 1px solid var(--band-rule);
+}
+
+/* Each row sits inside its own Reveal wrapper, so `.row:last-child` would
+   match every row. The last WRAPPER is what closes the list. */
+.rows > .reveal:last-child .row {
+    border-bottom: 1px solid var(--band-rule);
+}
+
+.row__body > * + * {
+    margin-top: var(--spacing-8);
+}
+
+/* ── testimonials ─────────────────────────────────────────── */
+
+.quote {
+    margin: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-20);
+    padding: var(--spacing-32);
+    border-radius: var(--radius-panels);
+    border: 1px solid var(--band-rule);
+    background: var(--surface-light-canvas);
+}
+
+.quote blockquote {
+    margin: 0;
+}
+
+.quote figcaption {
+    margin-top: auto;
+}
+
+.quote__mark {
+    font-family: var(--font-esbuild);
+    font-size: var(--text-display-sm);
+    line-height: 0.6;
+    color: var(--color-ember-pulse);
+}
+
+/* ── contact ──────────────────────────────────────────────── */
+
+.contact__email {
+    display: inline-block;
+    font-family: var(--font-esbuild);
+    font-size: clamp(28px, 5vw, 56px);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: var(--color-snow);
+    text-decoration: none;
+    transition: color 0.25s ease;
+}
+
+.contact__email:hover {
+    color: var(--color-electric-iris);
+}
+
+.contact__meta {
+    margin-top: var(--spacing-16);
+}
+
+.contact__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--element-gap);
+    margin-top: var(--spacing-32);
+}
+
+/* ── coda ─────────────────────────────────────────────────── */
+
+.coda {
+    margin: 0;
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.coda__quote {
+    font-family: var(--font-esbuild);
+    font-size: clamp(24px, 3.4vw, 40px);
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    margin: 0;
+}
+
+.coda__attribution {
+    margin-top: var(--spacing-24);
+    color: var(--color-smoke);
+}
+
+/* ── footer ───────────────────────────────────────────────── */
+
+.footer {
+    border-top: 1px solid var(--color-slate-edge);
+    padding-block: var(--spacing-32);
+    background: var(--surface-void);
+}
+
+.footer__inner {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--spacing-16);
+    max-width: var(--page-max-width);
+    margin: 0 auto;
+    padding-inline: var(--spacing-24);
+    color: var(--color-smoke);
+}
+
+/* ── the experiment banner ────────────────────────────────────
+   Not part of the design system. It exists so nobody, including me in a
+   month, mistakes this page for the real site. */
+
+.experiment-flag {
+    position: fixed;
+    z-index: 100;
+    bottom: var(--spacing-16);
+    left: var(--spacing-16);
+    padding: var(--spacing-8) var(--spacing-16);
+    border-radius: var(--radius-full);
+    background: rgba(9, 10, 12, 0.8);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--color-slate-edge);
+    color: var(--color-ash);
+    font-size: var(--text-caption);
+    letter-spacing: var(--tracking-caption);
+    text-decoration: none;
+}
+
+.experiment-flag strong {
+    color: var(--color-ember-pulse);
+    font-weight: var(--font-weight-medium);
+}
+
+/* ── reveal on scroll ─────────────────────────────────────── */
+
+.reveal {
+    opacity: 0;
+    transform: translateY(18px);
+    transition:
+        opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+        transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.reveal.is-in {
+    opacity: 1;
+    transform: none;
+}
+
+/* ── skip link ────────────────────────────────────────────── */
+
+.skip {
+    position: absolute;
+    left: -9999px;
+}
+
+.skip:focus {
+    left: var(--spacing-16);
+    top: var(--spacing-16);
+    z-index: 200;
+    padding: var(--spacing-12) var(--spacing-20);
+    border-radius: var(--radius-full);
+    background: var(--color-snow);
+    color: var(--color-void);
+}
+
+/* Visible focus everywhere, using the spec's own focus ring. */
+a:focus-visible,
+button:focus-visible {
+    outline: none;
+    box-shadow: var(--shadow-subtle);
+}
+
+/* ── responsive ───────────────────────────────────────────────
+   The grids collapse before the type does. A 3-column card grid at 800px is
+   three unreadable columns, but 80px display type is still fine — it is
+   already clamped. */
+
+@media (max-width: 980px) {
+    .grid--3 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .about {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-32);
+    }
+
+    .stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .nav__links {
+        display: none;
+    }
+}
+
+@media (max-width: 680px) {
+    .band {
+        padding-block: var(--spacing-64);
+    }
+
+    .grid--3,
+    .grid--2 {
+        grid-template-columns: 1fr;
+    }
+
+    .row {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-8);
+    }
+
+    .section-head {
+        margin-bottom: var(--spacing-40);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .aurora__beam {
+        animation: none;
+    }
+
+    .reveal {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+
+    .pill,
+    .card {
+        transition: none;
+    }
+}

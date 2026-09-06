@@ -1,3 +1,4 @@
+import { resolve } from "node:path";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
@@ -31,6 +32,20 @@ export default defineConfig({
     plugins: [react(), htmlSiteUrl()],
     build: {
         rollupOptions: {
+            /**
+             * Two entry points. Vite serves any .html in the project root
+             * during `npm run dev` automatically, but a build only follows the
+             * ones listed here — without this the experiment would work
+             * locally and silently vanish from the deployed output.
+             *
+             * The experiment shares nothing with the main app but content.ts,
+             * so the two bundles are genuinely independent: the real site does
+             * not carry a byte of it.
+             */
+            input: {
+                index: resolve(__dirname, "index.html"),
+                experiment: resolve(__dirname, "experiment.html"),
+            },
             output: {
                 // Three and React change far less often than our own code, so
                 // splitting them out means a copy change does not invalidate
