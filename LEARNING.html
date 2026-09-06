@@ -1549,6 +1549,138 @@ geometry without disposing the old one leaks a little every time the window move
 scales a 1x1 plane instead, so there is nothing to rebuild.</li>
 </ul>
 `
+},
+
+{
+title: "The React port — what maps to what",
+
+kid: `
+<p>You have written a recipe as one long page of instructions. Get the pan, heat the oil,
+chop the onion, and so on, top to bottom. It works. Anyone following it exactly will cook
+the meal.</p>
+<p>Now you rewrite the same recipe as a set of cards. One card for the sauce, one for the
+pasta, one for the salad. Each card lists its own ingredients and its own washing-up. A
+short master card says "do these three, then combine".</p>
+<p>Nothing about the food changed. Not one ingredient, not one temperature. What changed is
+that you can now hand the salad card to someone else, or swap it for a different salad,
+without reading the whole thing. And the washing-up for the sauce is written on the sauce
+card, so it cannot be forgotten when someone reorders the steps.</p>
+<p>That is the entire difference between the vanilla build and the React build of this
+site. Same site, same shaders, same maths. Reorganised so each piece carries its own setup
+and its own cleanup.</p>
+`,
+
+why: `
+<p>The vanilla version is the one that taught the machine: an explicit render loop, an
+explicit renderer, explicit disposal. The React version is the one that is easier to change
+six months from now, and easier to read if React is the shape your head is already in.</p>
+<p>Both are in the repository on purpose. Being able to explain why they differ is worth
+more in an interview than either of them alone.</p>
+`,
+
+translation: `
+<p>The map, file by file:</p>
+<table>
+<tr><td><span class="file">main.js</span></td><td><span class="file">main.tsx</span> + <span class="file">App.tsx</span></td></tr>
+<tr><td><span class="file">Stage.js</span> (renderer, scene, camera, loop)</td><td><code>&lt;Canvas&gt;</code> — R3F builds all four</td></tr>
+<tr><td><span class="file">DomPlane.js</span> (base class)</td><td><span class="file">useDomPlane.ts</span> (custom hook)</td></tr>
+<tr><td><span class="file">PhotoPlane.js</span></td><td><span class="file">PhotoPlane.tsx</span></td></tr>
+<tr><td><code>constructor(element, opts)</code></td><td><strong>props</strong></td></tr>
+<tr><td><code>this.hover = 0</code></td><td><code>useRef(0)</code></td></tr>
+<tr><td><code>#tick()</code> + <code>requestAnimationFrame</code></td><td><code>useFrame()</code></td></tr>
+<tr><td><code>dispose()</code></td><td>the function returned from <code>useEffect</code></td></tr>
+<tr><td><code>measure()</code> on load and resize</td><td><code>useEffect(…, [])</code> plus a resize listener</td></tr>
+<tr><td><code>document.querySelector</code></td><td><code>ref</code> passed down from the parent</td></tr>
+<tr><td>copy inside <span class="file">index.html</span></td><td><span class="file">data/content.ts</span></td></tr>
+</table>
+<p>The single rule that matters most, and the one people get wrong first:</p>
+<p><strong>State is for values that should cause a re-render. Refs are for values that
+change every frame and are read inside the loop.</strong> Scroll position, hover amount,
+cursor position and the eased loader counter are all refs. Which section the nav should
+highlight is state, because that genuinely should repaint something.</p>
+<p>Put scroll position in <code>useState</code> and you have built a machine for destroying
+your own frame rate: sixty re-renders a second, each one walking the whole component tree,
+to change a number a shader was going to read directly anyway.</p>
+`,
+
+code: `
+<p>The clearest single comparison. Vanilla — build everything, run the loop yourself:</p>
+<pre><code>this.renderer = new WebGLRenderer({ canvas, antialias: false });
+this.scene    = new Scene();
+this.camera   = new OrthographicCamera(-w/2, w/2, h/2, -h/2, 0.1, 100);
+
+#tick() {
+  this.frameId = requestAnimationFrame(() =&gt; this.#tick());
+  this.uniforms.uTime.value = this.clock.getElapsedTime();
+  this.renderer.render(this.scene, this.camera);
+}</code></pre>
+<p>React — declare what should exist, and what should happen each frame:</p>
+<pre><code>&lt;Canvas orthographic camera={{ position: [0, 0, 10] }} dpr={quality.pixelRatio}&gt;
+  &lt;Background quality={quality} /&gt;
+&lt;/Canvas&gt;
+
+<span class="c">// inside Background:</span>
+useFrame((_, delta) =&gt; {
+  material.uniforms.uTime.value += delta;
+  material.uniforms.uScroll.value = scrollState.progress;
+});</code></pre>
+<p>And the bridge that keeps the loop out of React's way, from
+<span class="file">state/scroll.ts</span>:</p>
+<pre><code><span class="c">// A plain mutable object. Lenis writes to it, useFrame reads from it,</span>
+<span class="c">// and React is never told anything happened — because nothing on screen</span>
+<span class="c">// needs re-rendering. The shader repaints itself.</span>
+export const scrollState = { progress: 0, pixels: 0, velocity: 0 };</code></pre>
+`,
+
+tour: `
+<p>Read the port in this order: <span class="file">App.tsx</span> to see the tree,
+<span class="file">state/scroll.ts</span> for the refs-versus-state argument,
+<span class="file">webgl-r3f/Background.tsx</span> to see <code>useFrame</code> replacing the
+loop, then <span class="file">hooks/useDomPlane.ts</span>, which is the class-to-hook
+conversion and the one place the React version is genuinely clearer.</p>
+<p>Two things R3F really did buy: <code>&lt;Canvas&gt;</code> removed about 200 lines of
+setup and teardown that had to be remembered and got right, and every cleanup now lives
+next to the setup it undoes, so they cannot drift apart.</p>
+<p>Two things it cost: about 170KB gzipped, and visibility. There is no line in the React
+version that says "draw the scene now". If you had not written the vanilla one first, you
+would not know that line exists.</p>
+`,
+
+poke: `
+<ol class="poke">
+<li>In <span class="file">webgl-r3f/Background.tsx</span>, change the
+<code>useMemo</code> around <code>uniforms</code> to a plain object literal with no
+useMemo. The gradient stops animating. A new uniforms object every render means Three keeps
+being handed a fresh one, and the value you incremented last frame is gone — the clearest
+possible demonstration of why identity matters in React.</li>
+<li>In <span class="file">state/scroll.ts</span>, imagine replacing the object with
+<code>useState</code> and wiring it through props. Then open React DevTools, turn on
+"Highlight updates when components render", and scroll. Right now nothing flashes at all —
+that is the point. Everything animated bypasses React entirely.</li>
+<li>In <span class="file">components/Reveal.tsx</span>, delete the
+<code>tween.scrollTrigger?.kill()</code> line. Nothing visibly breaks. That is what makes
+leaks dangerous: the trigger stays registered, listening forever, holding a reference to an
+element that has been unmounted.</li>
+</ol>
+`,
+
+breaks: `
+<ul>
+<li><strong>State in the render loop.</strong> The defining React-plus-WebGL mistake.
+Symptom: it works, and it is inexplicably slow, and the profiler shows thousands of
+renders.</li>
+<li><strong>Rebuilding uniforms, geometries or textures every render.</strong> Without
+<code>useMemo</code>, every render allocates fresh GPU objects and abandons the old ones.
+Memory climbs and nothing errors.</li>
+<li><strong>Forgetting the cleanup return.</strong> <code>useEffect</code> without a return
+is <code>dispose()</code> that never runs. Listeners, tweens and textures all outlive their
+components.</li>
+<li><strong>StrictMode surprises.</strong> In development React deliberately mounts, unmounts
+and remounts every component once, to expose exactly the missing cleanup above. If something
+works in production but breaks in development, that is usually what you have found — and it
+is telling you the truth.</li>
+</ul>
+`
 
 ];
 
