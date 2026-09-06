@@ -17,7 +17,17 @@ import type { Quality } from "../hooks/useQuality";
  *
  * That is the honest trade. Less code, and less visibility into the machine.
  */
-export function Background({ quality }: { quality: Quality }) {
+interface BackgroundProps {
+    quality: Quality;
+    /**
+     * How much grain this shader adds itself. Zero when the post-processing
+     * pass is running, because that lays grain over the finished image instead
+     * — one layer of film, not two.
+     */
+    grain: number;
+}
+
+export function Background({ quality, grain }: BackgroundProps) {
     const materialRef = useRef<ShaderMaterial>(null);
     const size = useThree((state) => state.size);
     const lastDraw = useRef(0);
@@ -35,9 +45,9 @@ export function Background({ quality }: { quality: Quality }) {
             uTime: { value: 0 },
             uScroll: { value: 0 },
             uResolution: { value: new Vector2(1, 1) },
-            uGrainStrength: { value: quality.grain },
+            uGrainStrength: { value: grain },
         }),
-        [quality.grain]
+        [grain]
     );
 
     // The shader divides by this to keep the glow circular. Written during

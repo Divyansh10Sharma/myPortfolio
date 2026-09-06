@@ -12,6 +12,7 @@ import { Coda } from "./components/Coda";
 import { Footer } from "./components/Footer";
 import { Preloader } from "./components/Preloader";
 import { Cursor } from "./components/Cursor";
+import { Grain } from "./components/Grain";
 import { useReducedMotion } from "./hooks/useReducedMotion";
 import { useQuality } from "./hooks/useQuality";
 import { useSmoothScroll } from "./hooks/useSmoothScroll";
@@ -103,6 +104,7 @@ export default function App() {
             />
 
             <Cursor />
+            <Grain />
 
             <a className="skip" href="#overview">
                 Skip to content

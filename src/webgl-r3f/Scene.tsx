@@ -3,6 +3,7 @@ import { Canvas } from "@react-three/fiber";
 import { Background } from "./Background";
 import { PhotoPlane } from "./PhotoPlane";
 import { TextPlane } from "./TextPlane";
+import { PostProcessing } from "./PostProcessing";
 import type { Quality } from "../hooks/useQuality";
 
 interface SceneProps {
@@ -39,6 +40,11 @@ export function Scene({
     // plain, fast, correct page rather than a degraded one with holes in it.
     const showEffects = !reducedMotion && !quality.small;
 
+    // Post-processing costs a second full-screen draw every frame. Worth it on
+    // a desktop GPU, not on a mid-range phone — and pointless under reduced
+    // motion, where the velocity-driven half of it never fires.
+    const usePost = !reducedMotion && !quality.weak && !quality.small;
+
     return (
         <Canvas
             orthographic
@@ -60,11 +66,18 @@ export function Scene({
             }}
             aria-hidden="true"
         >
-            <Background quality={quality} />
+            {/* When the post pass is running it lays grain over the whole
+                image, so the background must stop drawing its own or the two
+                stack up and the page looks like static. */}
+            <Background quality={quality} grain={usePost ? 0 : quality.grain} />
 
             {/* Suspense catches the texture load. Until it resolves, nothing
                 inside renders — and the real <img> underneath is still visible,
                 so there is never a gap where the photograph should be. */}
+            {usePost && (
+                <PostProcessing grain={quality.grain} aberration={0.006} />
+            )}
+
             <Suspense fallback={null}>
                 {showEffects && portrait && (
                     <PhotoPlane element={portrait} src={portraitSrc} />

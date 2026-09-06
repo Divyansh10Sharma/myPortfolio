@@ -70,8 +70,26 @@ export function TextPlane({ element, pixelRatio }: TextPlaneProps) {
         // Draw at device resolution or the letters are soft on any modern
         // screen. Capped for the same reason the renderer is.
         const dpr = Math.min(pixelRatio, 2);
-        canvas.width = Math.ceil(rect.width * dpr);
-        canvas.height = Math.ceil(rect.height * dpr);
+        const width = Math.ceil(rect.width * dpr);
+        const height = Math.ceil(rect.height * dpr);
+
+        // Changing a canvas's dimensions is what makes the GPU copy invalid.
+        // Three allocated the texture at whatever size the canvas was when it
+        // was created — 300x150, the default, before we had measured anything —
+        // and afterwards tries to update it in place. Uploading a larger image
+        // into that smaller allocation fails with
+        // "GL_INVALID_VALUE: Offset overflows texture dimensions", and the
+        // headline silently never appears.
+        //
+        // Disposing forces Three to allocate again at the new size on the next
+        // frame. Only when the size actually changed: disposing every repaint
+        // would throw away a perfectly good texture on every resize event.
+        const resized = canvas.width !== width || canvas.height !== height;
+
+        canvas.width = width;
+        canvas.height = height;
+
+        if (resized) texture.dispose();
 
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0); // work in CSS pixels from here
         ctx.clearRect(0, 0, rect.width, rect.height);
