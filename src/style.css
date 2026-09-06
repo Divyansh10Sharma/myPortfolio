@@ -911,10 +911,16 @@ h3 {
 }
 
 /* ── system detail page ────────────────────────────────────────
+   NOTE the class name. This block was originally called `.detail`, which
+   silently collided with the `<details>` disclosure inside every system row on
+   the index — those elements inherited `padding: 9rem`, `max-width` with auto
+   margins, and `min-height: 100svh`, putting a full viewport of empty space
+   inside each of the six rows.
+
    Deliberately narrower and quieter than the index. A detail page is for
    reading, so it gets one column, a short measure and a lot of air. */
 
-.detail {
+.systempage {
     position: relative;
     z-index: 1;
     max-width: 1600px;
@@ -923,7 +929,7 @@ h3 {
     min-height: 100svh;
 }
 
-.detail__index {
+.systempage__index {
     margin: 0;
     font-family: var(--mono);
     font-size: 0.75rem;
@@ -931,21 +937,21 @@ h3 {
     color: var(--signal);
 }
 
-.detail__name {
+.systempage__name {
     margin: 1.5rem 0 0;
     font-size: clamp(2.25rem, 6vw, 5rem);
     letter-spacing: -0.035em;
     max-width: 16ch;
 }
 
-.detail__subtitle {
+.systempage__subtitle {
     margin: 1rem 0 0;
     font-family: var(--mono);
     font-size: 0.95rem;
     color: var(--graphite);
 }
 
-.detail__lead {
+.systempage__lead {
     margin: 3.5rem 0 0;
     max-width: 34ch;
     font-size: clamp(1.25rem, 2.4vw, 1.875rem);
@@ -953,13 +959,13 @@ h3 {
     letter-spacing: -0.015em;
 }
 
-.detail__body {
+.systempage__body {
     margin: 2.5rem 0 0;
     max-width: 58ch;
     color: var(--graphite);
 }
 
-.detail__stack {
+.systempage__stack {
     margin: 3.5rem 0 0;
     padding-top: 1.5rem;
     border-top: 1px solid var(--rule);
@@ -967,11 +973,11 @@ h3 {
     font-size: 0.85rem;
 }
 
-.detail__stack p:last-child {
+.systempage__stack p:last-child {
     margin: 0.75rem 0 0;
 }
 
-.detail__back {
+.systempage__back {
     display: inline-block;
     margin-top: 4rem;
     font-family: var(--mono);
@@ -981,7 +987,7 @@ h3 {
     padding-bottom: 2px;
     transition: border-color 0.4s var(--ease);
 }
-.detail__back:hover {
+.systempage__back:hover {
     border-bottom-color: var(--bone);
 }
 

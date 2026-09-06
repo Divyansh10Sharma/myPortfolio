@@ -22,10 +22,10 @@ export function SystemPage() {
     // honest dead end with a way back, which is the useful part anyway.
     if (!system) {
         return (
-            <main className="detail" id="top">
-                <p className="detail__index">Not found</p>
-                <h1 className="detail__name">No such system</h1>
-                <Link className="detail__back" to="/">
+            <main className="systempage" id="top">
+                <p className="systempage__index">Not found</p>
+                <h1 className="systempage__name">No such system</h1>
+                <Link className="systempage__back" to="/">
                     ← Index
                 </Link>
             </main>
@@ -33,30 +33,30 @@ export function SystemPage() {
     }
 
     return (
-        <main className="detail" id="top">
-            <Reveal as="p" className="detail__index">
+        <main className="systempage" id="top">
+            <Reveal as="p" className="systempage__index">
                 {system.index}
             </Reveal>
 
-            <SplitReveal as="h1" className="detail__name">
+            <SplitReveal as="h1" className="systempage__name">
                 {system.name}
             </SplitReveal>
 
             {system.subtitle && (
-                <Reveal as="p" className="detail__subtitle" delay={0.05}>
+                <Reveal as="p" className="systempage__subtitle" delay={0.05}>
                     {system.subtitle}
                 </Reveal>
             )}
 
-            <Reveal as="p" className="detail__lead" delay={0.1}>
+            <Reveal as="p" className="systempage__lead" delay={0.1}>
                 {system.lead}
             </Reveal>
 
-            <Reveal as="p" className="detail__body" delay={0.15}>
+            <Reveal as="p" className="systempage__body" delay={0.15}>
                 {system.body}
             </Reveal>
 
-            <Reveal className="detail__stack" delay={0.2}>
+            <Reveal className="systempage__stack" delay={0.2}>
                 <p className="label">Stack</p>
                 <p>{system.stack.join(" · ")}</p>
             </Reveal>
@@ -70,7 +70,7 @@ export function SystemPage() {
             )}
 
             <Reveal delay={0.3}>
-                <Link className="detail__back" to="/">
+                <Link className="systempage__back" to="/">
                     ← Index
                 </Link>
             </Reveal>
