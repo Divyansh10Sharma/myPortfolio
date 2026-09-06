@@ -46,13 +46,58 @@
             href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='2' fill='%230B0B0C'/%3E%3Cpath d='M4 23 L11 10 L11 23 L18 10 L18 23 L25 10' fill='none' stroke='%23E9EBED' stroke-width='2.5' stroke-linejoin='miter'/%3E%3C/svg%3E"
         />
 
+        <!-- Critical CSS, inlined deliberately.
+
+             The stylesheet is render-blocking: nothing paints until it has been
+             fetched and parsed. The preloader is the very first thing anyone
+             sees, so waiting on a network round trip to style it means staring
+             at an unstyled page — or a blank one — for that whole time.
+
+             Only what is needed for the first frame lives here. Everything else
+             stays in style.css, and these values are duplicated there. -->
         <style>
-            /* Paint black before the bundle parses — no white flash on 4G. */
             html,
             body {
                 margin: 0;
                 background: #0b0b0c;
                 color: #e9ebed;
+            }
+            .preloader {
+                position: fixed;
+                inset: 0;
+                z-index: 200;
+                background: #0b0b0c;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-end;
+                padding: clamp(1.25rem, 5vw, 6rem);
+                font-family: ui-monospace, "IBM Plex Mono", monospace;
+            }
+            .preloader__name {
+                position: absolute;
+                top: clamp(1.25rem, 5vw, 6rem);
+                left: clamp(1.25rem, 5vw, 6rem);
+                margin: 0;
+                font-size: 0.8125rem;
+                color: #8a929e;
+            }
+            .preloader__count {
+                margin: 0 0 1.25rem;
+                font-variant-numeric: tabular-nums;
+                font-size: clamp(3rem, 12vw, 9rem);
+                line-height: 1;
+                letter-spacing: -0.04em;
+            }
+            .preloader__bar {
+                height: 1px;
+                background: #23252a;
+            }
+            .preloader__bar span {
+                display: block;
+                height: 100%;
+                background: #e9ebed;
+                transform: scaleX(0);
+                transform-origin: left center;
             }
         </style>
     </head>
@@ -101,9 +146,11 @@
                     <span class="dot" aria-hidden="true"></span>Available for opportunities
                 </p>
 
-                <!-- data-split is picked up by GSAP SplitText in main.js. The
-                     text is real DOM first; the split happens after load, so a
-                     failed script leaves a perfectly readable headline. -->
+                <!-- SIGNATURE EFFECT B. data-split marks this for the WebGL
+                     text plane, which paints the words into a canvas and bows
+                     them as you scroll. The <h1> stays here as the real,
+                     readable heading and is only hidden once the shader is
+                     genuinely drawing. -->
                 <h1 class="hero__headline" data-split>Five codebases. One engineer.</h1>
 
                 <p class="hero__sub reveal">
@@ -166,13 +213,20 @@
                              Divyansh. Must be replaced before launch. Tracked
                              in CONTENT.md. -->
                         <figure class="portrait">
-                            <img
-                                src="/divyansh.jpeg"
-                                alt="Divyansh Sharma, photographed straight on against a plain background."
-                                width="1022"
-                                height="1022"
-                                decoding="async"
-                            />
+                            <!-- 680px covers the 340px slot at 2x, which is
+                                 where we cap the pixel ratio anyway. The full
+                                 1022px original is kept in assets-source/,
+                                 outside public/, so it is not shipped. -->
+                            <picture>
+                                <source srcset="/divyansh.webp" type="image/webp" />
+                                <img
+                                    src="/divyansh-680.jpg"
+                                    alt="Divyansh Sharma, photographed straight on against a plain background."
+                                    width="680"
+                                    height="680"
+                                    decoding="async"
+                                />
+                            </picture>
                         </figure>
 
                         <p class="label">Certification</p>

@@ -140,6 +140,27 @@ document.querySelectorAll('a[href^="#"]').forEach((link) => {
 const headline = document.querySelector("[data-split]");
 const portrait = document.querySelector(".portrait img");
 
+/**
+ * Should this device run the two signature effects at all?
+ *
+ * They are the most expensive thing on the site — two extra full-screen-ish
+ * shader passes with a texture each — and on a phone one of them is pointless
+ * anyway: the photograph warps toward a pointer, and a touch screen has no
+ * pointer to warp toward. There is nothing to hover.
+ *
+ * So on a weak or touch device we keep the shader background, which is cheap
+ * and carries the whole mood, and drop the two planes. The real <img> and the
+ * real <h1> are already sitting underneath them, so what is left is not a
+ * degraded version with holes in it — it is the plain, fast, correct page.
+ */
+const canRunEffects = Boolean(
+    !reduceMotion &&
+        stage &&
+        // A touch screen has no pointer to warp the photograph toward, and a
+        // narrow viewport has no room for the headline to bow in.
+        !stage.quality.small
+);
+
 // Fonts first. The headline is painted into a canvas at its computed font size,
 // and measuring before the webfont arrives puts the line breaks in the wrong
 // places and paints the fallback face.
@@ -147,11 +168,11 @@ document.fonts.ready.then(() => {
     // Under reduced motion the planes are never created at all: the CSS keeps
     // the plain <h1> and the plain <img> visible, and drawing a second copy
     // underneath them would be waste.
-    if (stage && headline && !reduceMotion) stage.addText(headline);
+    if (canRunEffects && headline) stage.addText(headline);
     assetReady();
 });
 
-if (portrait && stage && !reduceMotion) {
+if (canRunEffects && portrait) {
     const photo = stage.addPhoto(portrait);
 
     // The texture load is the other half of the progress bar.

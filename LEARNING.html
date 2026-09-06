@@ -1335,6 +1335,220 @@ and stayed in the DOM. Remove it, or set <code>pointer-events: none</code>.</li>
 was never set to the pointer. Jump it there the first time, then lerp after that.</li>
 </ul>
 `
+},
+
+{
+title: "Why WebGL kills mid-range phones",
+
+kid: `
+<p>You have been asked to paint a wall, and you are paid the same either way. But nobody
+tells you how big the wall is until you turn up.</p>
+<p>At one house it is a normal wall. Fine. At the next house the wall is the same size to
+look at — same room, same window, same everything — except this owner wants it painted in
+much finer detail, so instead of one brushstroke per patch you have to do nine. Same wall,
+nine times the work.</p>
+<p>And you have to finish repainting the whole thing sixty times a minute, forever.</p>
+<p>Here is the cruel part. The person who wants the finer detail usually has the <em>worse
+brush</em>. Expensive phones and cheap phones both have very high resolution screens now,
+because that is what sells them — but the thing doing the painting inside a cheap phone is
+a fraction as capable. So the device that has been given the most work to do is the one
+least able to do it.</p>
+<p>That is the whole problem, and it explains why a site can be perfectly smooth on a
+laptop and unusable on a phone that costs a third as much.</p>
+`,
+
+why: `
+<p>Most of this site's audience is on mid-range Android in India. A site that only works on
+the machine it was built on is a failed site, and this is the specific mechanism by which
+that failure happens.</p>
+<p>Every shader here runs once per pixel, so pixel count is not one cost among many — it is
+essentially the whole bill.</p>
+`,
+
+translation: `
+<table>
+<tr><td>How many brushstrokes per patch</td><td><strong>devicePixelRatio</strong></td></tr>
+<tr><td>Total brushstrokes for one coat</td><td><strong>fill rate</strong> — pixels shaded per frame</td></tr>
+<tr><td>Repainting the whole wall</td><td>one <strong>frame</strong></td></tr>
+<tr><td>The quality of your brush</td><td>the <strong>GPU</strong></td></tr>
+<tr><td>Painting less finely to keep up</td><td>capping the <strong>pixel ratio</strong></td></tr>
+</table>
+<p>The arithmetic is worth doing once, because it is more brutal than it sounds. A 1x screen
+at 1280x800 is about 1 million pixels. A 3x phone screen at 390x844 CSS pixels is
+1170x2532 real pixels — about <strong>3 million</strong>. The phone is asking for three
+times the work of the laptop, on a chip perhaps a tenth as fast, from a battery.</p>
+<p>Capping the ratio at 1 on that phone takes it back to 330,000 pixels: <strong>nine times
+less work</strong>, from one line of code.</p>
+`,
+
+code: `
+<p>From <span class="file">src/webgl/Stage.js</span> — the single most valuable line in the
+project as far as phones are concerned:</p>
+<pre><code>pixelRatio: weak || small ? 1 : Math.min(window.devicePixelRatio, 2),</code></pre>
+<p>And the detection behind it, which is mostly an exercise in being honest about what you
+cannot know:</p>
+<pre><code><span class="c">// deviceMemory is Chrome-only. Absent is UNKNOWN, not low —</span>
+<span class="c">// defaulting it to a small number would quietly mark every</span>
+<span class="c">// Firefox and Safari desktop as a weak device.</span>
+const memory = navigator.deviceMemory;
+const knownLowMemory = typeof memory === "number" &amp;&amp; memory &lt;= 4;
+
+<span class="c">// Two separate questions, deliberately kept apart:</span>
+<span class="c">//   weak   — is this machine slow?   (how hard to push the shader)</span>
+<span class="c">//   coarse — is this a touch screen? (do hover effects mean anything)</span>
+const weak  = cores &lt;= 4 || knownLowMemory;
+const small = coarse || window.innerWidth &lt; 800;</code></pre>
+<p>There is no API that reports how fast a GPU is. Everything above is a proxy, every proxy
+is wrong sometimes, and the honest approach is to pick conservative ones and be clear in
+the code about what is a guess.</p>
+`,
+
+tour: `
+<p>Three levers, in order of how much they buy you:</p>
+<ul>
+<li><strong>Pixel ratio.</strong> Quadratic. Halving it quarters the work. Nothing else
+comes close.</li>
+<li><strong>Frame rate.</strong> Linear. A 30fps cap halves the work, and for something as
+slow as a breathing gradient nobody can tell.</li>
+<li><strong>Skipping work entirely.</strong> Off-screen planes are not drawn, and on touch
+devices the two signature effects are never created at all — a touch screen has no pointer
+to warp the photograph toward, so the expensive thing is also the pointless thing.</li>
+</ul>
+<p>Notice what is <em>not</em> on that list: making the shader arithmetic cleverer. It
+rarely matters next to how many pixels you asked for.</p>
+`,
+
+poke: `
+<ol class="poke">
+<li>Open devtools → Rendering → tick "Frame Rendering Stats", then in the device toolbar
+pick a phone with a 3x screen. Watch the GPU figure. Now in
+<span class="file">Stage.js</span> force <code>pixelRatio: 3</code> and watch it again.</li>
+<li>Force <code>fpsCap: 0</code> in the low branch and throttle the CPU to 6x in devtools →
+Performance. The gradient starts to stutter. Put the cap back and it is smooth again at
+half the frame rate — slower, but steady, which is what actually reads as quality.</li>
+<li>In devtools, emulate a touch device and reload. Neither signature effect runs, and the
+plain photograph and plain headline are what you get. That is the mobile fallback, and it
+is a complete page rather than a broken one.</li>
+</ol>
+`,
+
+breaks: `
+<ul>
+<li><strong>Testing only on your own machine.</strong> The single biggest cause. A
+development laptop is close to the best case your site will ever see.</li>
+<li><strong>Uncapped devicePixelRatio.</strong> The default, and quietly nine times the
+work on a high-density screen.</li>
+<li><strong>Treating an unknown as a bad result.</strong> The Firefox and Safari bug
+described above — absent data is not evidence of a weak device, and assuming it is means
+switching your best work off for a large slice of visitors.</li>
+<li><strong>Degrading into something broken.</strong> A fallback has to be a coherent
+experience in its own right, not the full one with holes in it. Ours drops to real HTML
+that was there the whole time.</li>
+</ul>
+`
+},
+
+{
+title: "Dispose — the GPU has no garbage collector",
+
+kid: `
+<p>You rent a storage unit across town to keep a piece of furniture in.</p>
+<p>Back home, you tear up the paper slip with the unit number on it. As far as your house is
+concerned, the furniture is gone — there is no note about it anywhere, nothing to trip over,
+no reminder it exists.</p>
+<p>The storage company has not been told anything. The unit is still rented. The furniture is
+still in it. The bill still arrives every month, forever, and you no longer even know which
+unit it is to go and cancel it.</p>
+<p>JavaScript is your house. The graphics card is the storage company. Throwing away your
+last reference to something clears your side and leaves the other side rented for the life
+of the page — and unlike a real storage unit, you cannot phone up and ask.</p>
+`,
+
+why: `
+<p>Textures are the expensive tenants. The photograph as originally supplied was 1022x1022,
+which on the graphics card is roughly <strong>4MB</strong> regardless of how small the file
+on disk was — that is one of the reasons it is now served at 680px.</p>
+<p>This page has one scene that lives as long as the tab, so nothing here leaks today. It
+matters the moment anything is created and destroyed repeatedly.</p>
+`,
+
+translation: `
+<table>
+<tr><td>Your house</td><td>JavaScript memory — garbage collected automatically</td></tr>
+<tr><td>The storage unit</td><td><strong>GPU memory</strong> — never collected automatically</td></tr>
+<tr><td>Tearing up the slip</td><td>dropping the last reference to a mesh</td></tr>
+<tr><td>Cancelling the unit</td><td><code>.dispose()</code></td></tr>
+<tr><td>The bill arriving forever</td><td>a <strong>GPU memory leak</strong></td></tr>
+</table>
+<p>Three kinds of thing need releasing by hand: <strong>geometries</strong> (the corner
+positions), <strong>materials</strong> (the compiled shader programs) and
+<strong>textures</strong> (the pictures, and much the largest). Removing a mesh from a scene
+frees none of them.</p>
+`,
+
+code: `
+<p>From <span class="file">src/webgl/Stage.js</span>:</p>
+<pre><code>dispose() {
+    <span class="c">// Stop the loop first. A loop still running after its canvas</span>
+    <span class="c">// is gone is a leak that is very hard to spot later.</span>
+    if (this.frameId !== null) cancelAnimationFrame(this.frameId);
+    window.removeEventListener("resize", this.onResize);
+
+    this.planes.forEach((plane) =&gt; {
+        this.scene.remove(plane.mesh);  <span class="c">// takes it out of the scene…</span>
+        plane.dispose();                <span class="c">// …this actually frees the memory</span>
+    });
+
+    this.scene.remove(this.background);
+    this.backgroundGeometry.dispose();
+    this.backgroundMaterial.dispose();
+    this.renderer.dispose();  <span class="c">// releases the context itself</span>
+}</code></pre>
+<p>Those first two lines are the ones people forget. An event listener and a running loop
+both hold a reference to everything they can reach, so a scene you thought you had thrown
+away is kept alive in full by a single listener nobody removed.</p>
+<p>Note also that <code>PhotoPlane.dispose()</code> releases its texture before calling
+<code>super.dispose()</code> for the geometry and material. Three of them, three calls.</p>
+`,
+
+tour: `
+<p>The rule that survives everything else in this file: <strong>remove() is not
+dispose()</strong>. One takes an object out of the picture. The other gives the memory back.
+They look interchangeable and they are not, and nothing will ever warn you.</p>
+<p>The mental checklist when tearing anything down: cancel the loop, remove the listeners,
+dispose geometry, dispose material, dispose textures.</p>
+`,
+
+poke: `
+<ol class="poke">
+<li>On the running site, open the console and type <code>stage.dispose()</code>. The
+background freezes exactly where it was — the loop has stopped and nothing is drawing any
+more. Reload to get it back.</li>
+<li>Before that, run <code>stage.renderer.info.memory</code>. It reports the number of live
+geometries and textures. Run it again after <code>dispose()</code> and watch them fall. That
+object is the honest answer to "am I leaking?" and it is worth remembering.</li>
+<li>Comment out <code>this.texture?.dispose()</code> in
+<span class="file">PhotoPlane.js</span>, then dispose and check
+<code>renderer.info.memory.textures</code> again. It stays. That is the storage unit still
+being rented.</li>
+</ol>
+`,
+
+breaks: `
+<ul>
+<li><strong>Calling remove() and assuming it freed something.</strong> The single most common
+Three.js leak.</li>
+<li><strong>Leaving the loop running.</strong> Invisible on a single page. On a site with
+route changes it compounds: several loops all drawing scenes nobody can see.</li>
+<li><strong>Forgetting the listeners.</strong> <code>addEventListener</code> without a
+matching <code>removeEventListener</code> keeps the whole object graph alive, and it needs
+the exact same function reference — <code>this.method.bind(this)</code> called twice creates
+two different functions and removes nothing.</li>
+<li><strong>Rebuilding geometry on every resize.</strong> A resize handler that creates a new
+geometry without disposing the old one leaks a little every time the window moves. Ours
+scales a 1x1 plane instead, so there is nothing to rebuild.</li>
+</ul>
+`
 
 ];
 

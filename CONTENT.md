@@ -84,9 +84,13 @@ end of Phase 3, once the port has actually happened. Leave it alone until then.
 
 ### Photograph
 
-`public/divyansh.jpeg` — 1022x1022, 154 KB. Square. Stays crisp up to roughly
-510px displayed on a retina screen; a larger export would be needed to show it
-bigger than that.
+Original: `assets-source/divyansh.jpeg` — 1022x1022, 154 KB, square. Kept in the
+repo but outside `public/`, so it is not shipped.
+
+Shipped: `public/divyansh.webp` (23 KB) with `public/divyansh-680.jpg` (47 KB) as
+a fallback, both 680x680. That covers the 340px slot at 2x device pixel ratio,
+which is where the renderer caps anyway. Showing the photograph any larger than
+340px would need a new export from you at around 2000px.
 
 Live on the site as of Sprint 3: it is the Overview portrait, and it is the
 subject of signature effect A (the shader plane that warps on hover). The real

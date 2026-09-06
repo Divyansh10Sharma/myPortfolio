@@ -38,17 +38,35 @@ import backgroundFrag from "../shaders/background.frag?raw";
  * the machine this was built on.
  */
 function detectQuality() {
-    const cores = navigator.hardwareConcurrency || 4;
-    const memory = navigator.deviceMemory || 4; // GB, Chrome only
+    const cores = navigator.hardwareConcurrency || 8;
+
+    // deviceMemory is Chrome-only. Absent is UNKNOWN, not low — defaulting it
+    // to a small number would quietly mark every Firefox and Safari desktop as
+    // a weak device and switch the effects off for them.
+    const memory = navigator.deviceMemory;
+    const knownLowMemory = typeof memory === "number" && memory <= 4;
+
     const coarse = window.matchMedia("(pointer: coarse)").matches;
 
-    const low = cores <= 4 || memory <= 4 || (coarse && window.innerWidth < 900);
+    // Two separate questions, deliberately kept apart:
+    //
+    //   weak    — is this machine slow? Governs how hard we push the shader.
+    //   coarse  — is this a touch screen? Governs whether hover effects make
+    //             any sense at all, which is a different question entirely.
+    //
+    // Conflating them is how a perfectly capable four-core desktop ends up
+    // being served the phone experience.
+    const weak = cores <= 4 || knownLowMemory;
+    const small = coarse || window.innerWidth < 800;
 
     return {
-        low,
-        pixelRatio: low ? 1 : Math.min(window.devicePixelRatio, 2),
-        fpsCap: low ? 30 : 0, // 0 = uncapped
-        grain: low ? 0.055 : 0.075,
+        weak,
+        coarse,
+        small,
+        low: weak || small, // governs pixel ratio, frame rate and grain
+        pixelRatio: weak || small ? 1 : Math.min(window.devicePixelRatio, 2),
+        fpsCap: weak || small ? 30 : 0, // 0 = uncapped
+        grain: weak || small ? 0.055 : 0.075,
     };
 }
 
