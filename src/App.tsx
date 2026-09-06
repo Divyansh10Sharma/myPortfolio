@@ -8,6 +8,7 @@ import { Work } from "./components/Work";
 import { Projects } from "./components/Projects";
 import { Testimonials } from "./components/Testimonials";
 import { Contact } from "./components/Contact";
+import { Coda } from "./components/Coda";
 import { Footer } from "./components/Footer";
 import { Preloader } from "./components/Preloader";
 import { Cursor } from "./components/Cursor";
@@ -117,6 +118,7 @@ export default function App() {
                 <Projects />
                 <Testimonials />
                 <Contact />
+                <Coda />
             </main>
 
             <Footer />

@@ -761,3 +761,32 @@ h3 {
         visibility: visible;
     }
 }
+
+
+/* ── closing quote ─────────────────────────────────────────────
+   Deliberately quiet: a hairline above it, a lot of air, and type a step
+   below the hero so it closes the page rather than competing with it. */
+
+.coda {
+    border-top: 1px solid var(--rule);
+}
+
+.coda figure {
+    margin: 0;
+}
+
+.coda blockquote {
+    margin: 0;
+    max-width: 22ch;
+    font-size: clamp(1.5rem, 4.2vw, 3.25rem);
+    line-height: 1.14;
+    letter-spacing: -0.03em;
+    text-wrap: balance; /* keeps the last line from being one orphaned word */
+}
+
+.coda figcaption {
+    margin-top: 2.25rem;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--graphite);
+}

@@ -212,4 +212,15 @@ export const testimonials: Testimonial[] = [
     },
 ];
 
+/**
+ * Closing sign-off, supplied by Divyansh in chat. See CONTENT.md.
+ *
+ * The attribution is UNVERIFIED — reported, not confirmed. Worth checking
+ * before this is in front of recruiters.
+ */
+export const closingQuote = {
+    text: "“Whatever it is, we’re gonna figure it out. It’s gonna happen. How? I don’t know. But it’s gonna happen.”",
+    attribution: "— Tom Cruise",
+} as const;
+
 export const footerLine = "2026 · Built with React, R3F and GSAP · Deployed on Vercel";
