@@ -9,6 +9,7 @@
  */
 
 export interface System {
+    /** Doubles as the URL slug: /systems/<id>. Changing one changes the other. */
     id: string;
     index: string;
     name: string;
@@ -158,6 +159,11 @@ export const systems: System[] = [
         stack: ["PostgreSQL", "Firestore", "Python"],
     },
 ];
+
+/** Find a system by its URL slug. Returns undefined for an unknown one. */
+export function findSystem(id: string | undefined): System | undefined {
+    return systems.find((system) => system.id === id);
+}
 
 export const work: Role[] = [
     {

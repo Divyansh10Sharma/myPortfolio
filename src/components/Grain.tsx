@@ -23,6 +23,12 @@ export function Grain() {
     useEffect(() => {
         if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
+        // Touch devices keep the texture but not the movement. Jittering a
+        // full-screen composited layer is a luxury worth paying for on a
+        // desktop GPU and not on a mid-range phone, where those frames are
+        // needed elsewhere. The grain still does its job standing still.
+        if (window.matchMedia("(pointer: coarse)").matches) return;
+
         const element = ref.current;
         if (!element) return;
 

@@ -211,7 +211,7 @@ obviously toggleable.
 
 ---
 
-### 10. Performance re-pass
+### 10. Performance re-pass — ⚠️ PARTIAL
 
 After the above: Lighthouse again, profile on a real mid-range Android, and
 revisit the payload. The React port ships ~358KB gzipped against 188KB for the
@@ -219,6 +219,41 @@ vanilla build, and every item here adds to that.
 
 **Why:** the stated audience is mid-range Android on patchy 4G. Everything above
 is desktop-facing and the phone experience must not quietly rot while we work.
+
+**Measured (2026-09-06):**
+
+| | |
+|---|---|
+| Accessibility | 100 |
+| Best practices | 100 |
+| SEO | 100 |
+| JS shipped, gzipped | 354 KB (three 179, app 116, react 59) |
+| Everything in `dist`, gzipped | 560 KB |
+
+**Performance score not measured, deliberately.** Headless Chrome here runs
+WebGL through SwiftShader — software rendering — and the post-processing pass
+makes a full page load take six minutes. Any number produced under that measures
+the software renderer, not the site. It has to be run on real hardware.
+
+**Fixed in this pass:** the grain overlay no longer jitters on touch devices and
+drops its `will-change` promotion there. Keeping a full-screen composited layer
+repainting on a phone, for a texture nobody is inspecting, was the clearest
+unnecessary cost added by items 1–7.
+
+**Still outstanding, and the honest headline:** the React port ships **354 KB**
+of JavaScript gzipped against **188 KB** for the vanilla `main`. Three is 179 KB
+of that and is not negotiable while the site is WebGL. React plus R3F is the
+rest. On patchy 4G this is the single biggest real-world regression in the whole
+upgrade, and no amount of shader work offsets it.
+
+Options, none free:
+- Accept it, and treat desktop as the audience the effects are for.
+- Lazy-load the whole WebGL layer after first paint, so the text arrives fast
+  and the canvas follows. Roughly a day, and the largest available win.
+- Keep vanilla `main` live and treat `pizza` as the showcase build.
+
+**Not yet done:** profiling on a real mid-range Android. Nothing in this file
+substitutes for that.
 
 ---
 
