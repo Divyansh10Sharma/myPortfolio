@@ -4,7 +4,7 @@ A personal site built as a WebGL surface with a real HTML document underneath it
 Near-black, type-led, deliberately slow. Vanilla JavaScript, raw Three.js, hand-written
 GLSL — no framework, no 3D abstraction layer.
 
-**Live:** https://divyansh-portfolio-five.vercel.app
+**Live:** https://my-portfolio-lyart-rho-28.vercel.app
 
 ---
 
