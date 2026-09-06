@@ -890,3 +890,111 @@ h3 {
         opacity: 1;
     }
 }
+
+
+/* ── page transition panel ─────────────────────────────────────
+   Covers the screen while the content underneath is swapped. Same motion
+   vocabulary as the preloader lifting away, on purpose — one gesture that
+   means "the page is changing".
+
+   z-index sits below the preloader and above the cursor: a navigation should
+   cover the cursor ring, but the initial load should cover everything. */
+
+.transition {
+    position: fixed;
+    inset: 0;
+    z-index: 180;
+    background: var(--void);
+    transform: translateY(100%); /* parked off-screen until a navigation */
+    pointer-events: none;
+    will-change: transform;
+}
+
+/* ── system detail page ────────────────────────────────────────
+   Deliberately narrower and quieter than the index. A detail page is for
+   reading, so it gets one column, a short measure and a lot of air. */
+
+.detail {
+    position: relative;
+    z-index: 1;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 9rem var(--pad) var(--gap);
+    min-height: 100svh;
+}
+
+.detail__index {
+    margin: 0;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    color: var(--signal);
+}
+
+.detail__name {
+    margin: 1.5rem 0 0;
+    font-size: clamp(2.25rem, 6vw, 5rem);
+    letter-spacing: -0.035em;
+    max-width: 16ch;
+}
+
+.detail__subtitle {
+    margin: 1rem 0 0;
+    font-family: var(--mono);
+    font-size: 0.95rem;
+    color: var(--graphite);
+}
+
+.detail__lead {
+    margin: 3.5rem 0 0;
+    max-width: 34ch;
+    font-size: clamp(1.25rem, 2.4vw, 1.875rem);
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+}
+
+.detail__body {
+    margin: 2.5rem 0 0;
+    max-width: 58ch;
+    color: var(--graphite);
+}
+
+.detail__stack {
+    margin: 3.5rem 0 0;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--rule);
+    font-family: var(--mono);
+    font-size: 0.85rem;
+}
+
+.detail__stack p:last-child {
+    margin: 0.75rem 0 0;
+}
+
+.detail__back {
+    display: inline-block;
+    margin-top: 4rem;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    text-decoration: none;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 2px;
+    transition: border-color 0.4s var(--ease);
+}
+.detail__back:hover {
+    border-bottom-color: var(--bone);
+}
+
+/* The system name on the index is now a link. It should not look like one
+   until you are near it — the row is already obviously a unit. */
+.row__link {
+    text-decoration: none;
+    background-image: linear-gradient(var(--bone), var(--bone));
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    background-size: 0% 1px;
+    transition: background-size 0.5s var(--ease);
+}
+.row__link:hover {
+    background-size: 100% 1px;
+}

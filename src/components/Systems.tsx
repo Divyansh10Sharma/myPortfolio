@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { systems, systemsIntro, type System } from "../data/content";
 import { Section } from "./Section";
 import { Reveal } from "./Reveal";
@@ -17,7 +18,14 @@ function SystemRow({ system }: { system: System }) {
         <Reveal as="article" className="row">
             <div className="row__head">
                 <p className="row__index">{system.index}</p>
-                <h3>{system.name}</h3>
+                {/* The heading is the link, so the accessible name of the link
+                    is the system name — not "read more", which tells a screen
+                    reader user nothing about where they are going. */}
+                <h3>
+                    <Link className="row__link" to={`/systems/${system.id}`}>
+                        {system.name}
+                    </Link>
+                </h3>
                 {system.subtitle && <p className="row__subtitle">{system.subtitle}</p>}
             </div>
 

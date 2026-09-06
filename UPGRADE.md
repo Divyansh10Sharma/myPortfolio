@@ -188,16 +188,39 @@ appears to pull the page up behind it. One movement instead of two.
 
 ---
 
-### 8. Page transitions — BIGGEST
+### 8. Page transitions — ✅ DONE
 
 Add routing, keep the WebGL context alive across route changes, and transition
 between pages without a reload. Needs a second page to exist to be worth
 anything — a project detail page, most likely.
 
-**Why:** persistent context across navigation is a defining Active Theory trait.
-**Effort:** a day or more, plus writing whatever the second page contains.
-**Risk:** the naive version leaks GPU memory on every navigation. Content does
-not exist yet and must not be invented.
+**Done:** React Router, `pages/SystemPage.tsx`, `pages/Home.tsx`,
+`components/PageTransition.tsx`, plus `vercel.json` for the SPA rewrite.
+
+Six detail pages at `/systems/<id>`. **No new copy was written** — every word
+already existed in `content.ts`, the same data the homepage row renders. The
+pages can be thickened later without touching the transition machinery.
+
+**The architecture, which is the whole point:** the canvas, cursor and grain sit
+OUTSIDE `<BrowserRouter>` in `App.tsx`, so routing cannot unmount them. The
+WebGL context, its shaders and its compiled programs survive every navigation.
+Putting the canvas inside the router destroys and rebuilds a context per
+navigation — slow, and the classic way to leak GPU memory.
+
+**A neat consequence:** the headline and portrait refs are callback refs owned by
+App. React calls a callback ref with null on unmount, so navigating away
+automatically tells the canvas those elements are gone and the planes dispose
+themselves. Routing and cleanup turn out to be the same mechanism.
+
+Scroll resets while the panel is covering, through Lenis rather than
+`window.scrollTo`, so the two never disagree. Panel motion matches the
+preloader lift deliberately. Nav swaps its section links for "← Index" off the
+index, and the system name is the link, so a screen reader hears the system name
+rather than "read more".
+
+**Verified:** all six routes render, the NDA marker travels to Rexpert's page,
+unknown slugs land on an honest dead end with a way back, and the canvas is
+still in the DOM after navigation.
 
 ---
 

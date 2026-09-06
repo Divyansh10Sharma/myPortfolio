@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { navLinks, profile } from "../data/content";
 
 /**
@@ -12,8 +13,17 @@ import { navLinks, profile } from "../data/content";
  */
 export function Nav() {
     const [active, setActive] = useState<string>("");
+    const { pathname } = useLocation();
+    const isHome = pathname === "/";
 
     useEffect(() => {
+        // The sections only exist on the index. Observing on a detail page
+        // would find nothing and leave a stale highlight behind.
+        if (!isHome) {
+            setActive("");
+            return;
+        }
+
         const sections = navLinks
             .map((link) => document.getElementById(link.id))
             .filter((el): el is HTMLElement => el !== null);
@@ -31,26 +41,30 @@ export function Nav() {
 
         sections.forEach((section) => observer.observe(section));
         return () => observer.disconnect();
-    }, []);
+    }, [isHome]);
 
     return (
         <header className="nav">
             <div className="nav__inner">
-                <a className="nav__name" href="#top">
+                <Link className="nav__name" to="/">
                     {profile.name}
-                </a>
+                </Link>
 
                 <nav className="nav__links" aria-label="Primary">
-                    {navLinks.map((link) => (
-                        <a
-                            key={link.id}
-                            href={`#${link.id}`}
-                            className={active === link.id ? "is-active" : undefined}
-                            aria-current={active === link.id ? "true" : undefined}
-                        >
-                            {link.label}
-                        </a>
-                    ))}
+                    {isHome ? (
+                        navLinks.map((link) => (
+                            <a
+                                key={link.id}
+                                href={`#${link.id}`}
+                                className={active === link.id ? "is-active" : undefined}
+                                aria-current={active === link.id ? "true" : undefined}
+                            >
+                                {link.label}
+                            </a>
+                        ))
+                    ) : (
+                        <Link to="/">← Index</Link>
+                    )}
                 </nav>
 
                 <a
