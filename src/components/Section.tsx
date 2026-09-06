@@ -1,5 +1,6 @@
-import type { ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 import { Reveal } from "./Reveal";
+import { useVelocitySkew } from "../hooks/useVelocitySkew";
 
 interface SectionProps {
     id: string;
@@ -7,6 +8,11 @@ interface SectionProps {
     index: string;
     label: string;
     children: ReactNode;
+    /**
+     * Lean and lag while the page scrolls. Off for any section that hosts a
+     * WebGL plane — see Overview.
+     */
+    skew?: boolean;
 }
 
 /**
@@ -17,9 +23,12 @@ interface SectionProps {
  * clearest single win of the port — one definition, six uses, and changing the
  * label style means editing one file.
  */
-export function Section({ id, index, label, children }: SectionProps) {
+export function Section({ id, index, label, children, skew = true }: SectionProps) {
+    const ref = useRef<HTMLElement>(null);
+    useVelocitySkew(ref, skew);
+
     return (
-        <section className="section" id={id}>
+        <section className="section" id={id} ref={ref}>
             <Reveal as="p" className="section__label">
                 <span>{index}</span> {label}
             </Reveal>

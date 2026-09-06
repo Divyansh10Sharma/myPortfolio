@@ -13,7 +13,13 @@ export const Overview = forwardRef<HTMLImageElement>(function Overview(_props, r
     const { heading, paragraphs, certification, portraitAlt } = overview;
 
     return (
-        <Section id="overview" index="01" label="Overview">
+        // skew={false}: this section contains the portrait, and the WebGL
+        // plane drawn over it is positioned from the image's measured
+        // rectangle. Transforming the section changes that rectangle every
+        // frame, so the plane would drift away from the photograph it is
+        // supposed to be covering. The portrait gets its motion from its own
+        // shader instead.
+        <Section id="overview" index="01" label="Overview" skew={false}>
             <div className="section__grid">
                 <div className="col-main">
                     <Reveal as="h2">{heading}</Reveal>

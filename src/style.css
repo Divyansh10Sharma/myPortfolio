@@ -695,7 +695,8 @@ h3 {
     /* Only these two are transitioned. The position is set every frame from
        JavaScript and must not be transitioned, or it would lag twice. */
     transition: opacity 0.4s var(--ease), scale 0.4s var(--ease),
-        border-color 0.4s var(--ease);
+        border-color 0.4s var(--ease), border-radius 0.4s var(--ease),
+        background-color 0.4s var(--ease);
     will-change: transform;
 }
 
@@ -832,4 +833,26 @@ h3 {
     .grain {
         transform: none !important;
     }
+}
+
+
+/* ── cursor states ─────────────────────────────────────────────
+   The ring says what kind of thing is under it. Scale alone reads as "this is
+   clickable"; a filled ring for links that leave the site, and a wider, flatter
+   one over a disclosure, say something more specific.
+
+   Note these transition `scale` and `border-radius`, never `transform` — the
+   position is written every frame from JavaScript and transitioning it would
+   make the ring lag twice. */
+
+.cursor.is-external {
+    scale: 1.9;
+    background: color-mix(in srgb, var(--signal) 18%, transparent);
+    border-color: var(--signal);
+}
+
+.cursor.is-expandable {
+    scale: 1.35;
+    border-radius: 4px;
+    border-color: var(--bone);
 }

@@ -51,8 +51,17 @@ export function Cursor() {
             // closest() walks up the tree, so this still works when the pointer
             // is over a <span> inside a link.
             const target = event.target as Element | null;
+
+            // Three states rather than one, because "you can click this" and
+            // "this will take you somewhere else" are different promises and
+            // the cursor may as well say which.
+            const external = target?.closest?.('a[target="_blank"]');
+            const expandable = target?.closest?.("summary");
             const interactive = target?.closest?.("a, button, summary, [role='button']");
+
             ring.classList.toggle("is-active", Boolean(interactive));
+            ring.classList.toggle("is-external", Boolean(external));
+            ring.classList.toggle("is-expandable", Boolean(expandable) && !external);
         };
 
         const onLeave = () => {

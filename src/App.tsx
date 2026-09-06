@@ -16,6 +16,7 @@ import { Grain } from "./components/Grain";
 import { useReducedMotion } from "./hooks/useReducedMotion";
 import { useQuality } from "./hooks/useQuality";
 import { useSmoothScroll } from "./hooks/useSmoothScroll";
+import { useMagnetic } from "./hooks/useMagnetic";
 
 /**
  * The parent. Owns the shared concerns and hands them down.
@@ -32,6 +33,12 @@ export default function App() {
 
     // Lenis. Disabled entirely under reduced motion.
     const lenisRef = useSmoothScroll(!reducedMotion);
+
+    // Large targets only. The email address is the biggest type on the page
+    // after the headline, and the nav resume link sits alone in the corner —
+    // both are far too big for a few pixels of travel to affect aim. Body
+    // links and nav items are deliberately excluded.
+    useMagnetic(".email, .nav__resume");
 
     // The real DOM elements the WebGL planes shadow. State rather than refs,
     // because the Scene must RE-RENDER once they exist — a ref changing does

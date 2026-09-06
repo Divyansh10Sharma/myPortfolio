@@ -60,7 +60,7 @@ small an allocation (`GL_INVALID_VALUE`). Present on `main` too.
 
 ---
 
-### 2. DOM grain overlay — NEXT
+### 2. DOM grain overlay — ✅ DONE
 
 The post pass only touches the canvas. All body text is DOM sitting above it, so
 it currently receives no grain and no aberration — which is the single most
@@ -69,24 +69,32 @@ visible remaining seam between "a page with a canvas behind it" and "a surface".
 A fixed, `pointer-events: none` layer above everything, carrying the same noise,
 jittered on a cheap interval so it does not crawl.
 
-**Why:** unifies text and canvas without moving text into WebGL.
-**Effort:** ~1h. **Cost:** one composited layer; negligible if animated by
-transform only.
-**Risk:** get it wrong and text legibility suffers. Keep it under ~4% opacity.
+**Done:** `components/Grain.tsx`, `.grain` in `style.css`. Browser-generated
+SVG turbulence, 128px tile, jittered ~8 times a second by transform only.
+
+**Sized 110%, not 200%.** The layer is composited, so its area is real memory
+and the filter is rasterised across all of it. Opacity 0.038 — worth checking
+against the small mono type on a real screen.
 
 ---
 
-### 3. Scroll-velocity response on DOM content
+### 3. Scroll-velocity response on DOM content — ✅ DONE
 
 Sections lag and skew very slightly as the page moves, settling when it stops —
 the same velocity number the headline shader already uses, applied to DOM
 transforms.
 
-**Why:** the page currently scrolls smoothly but rigidly. Everything moving as
-one flat sheet is the clearest tell that content and motion are separate systems.
-**Effort:** ~2h. **Cost:** transforms only, compositor-friendly.
-**Risk:** overdone this reads as broken. Ceiling of a few degrees and a few
-pixels.
+**Done:** `hooks/useVelocitySkew.ts`, applied by `Section`. Max 1.1 degrees of
+skew and 14px of lag, eased, snapping to exactly zero when it stops so the
+element does not stay promoted or crooked.
+
+**Overview opts out** (`skew={false}`): it contains the portrait, and the WebGL
+plane is positioned from the image's measured rectangle. Transforming the
+section would move that rectangle every frame and the plane would drift off the
+photograph. The reason is written into the component.
+
+It reads the same velocity number the headline shader uses, so DOM and WebGL
+respond to one shared input rather than two systems that happen to agree.
 
 ---
 
@@ -105,14 +113,22 @@ to stay calm.
 
 ---
 
-### 5. Magnetic links and cursor states
+### 5. Magnetic links and cursor states — ✅ DONE
 
 Links pull the cursor ring toward them within a radius; the ring changes shape
 over different kinds of target rather than only scaling.
 
-**Why:** the cheapest remaining "everything responds to me" win.
-**Effort:** ~1.5h. **Cost:** nil.
-**Risk:** magnetism on small text hurts usability. Apply to large targets only.
+**Done:** `hooks/useMagnetic.ts`, applied to `.email` and `.nav__resume` only.
+Both are large enough that a few pixels of travel cannot affect aim; body links
+and nav items are deliberately excluded, because a small target that moves as
+you aim at it is a usability bug wearing polish.
+
+Uses `gsap.quickTo` — one reusable tween per property per element. Calling
+`gsap.to()` on every pointer move, which is the obvious version, leaves dozens
+of overlapping tweens fighting over the same property.
+
+Cursor now has three states rather than one: clickable, leaves-the-site
+(filled, accent), and expandable (wider, squarer).
 
 ---
 
