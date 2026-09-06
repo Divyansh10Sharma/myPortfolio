@@ -629,3 +629,135 @@ h3 {
         animation-duration: 0.01ms !important;
     }
 }
+
+
+/* ── preloader ─────────────────────────────────────────────── */
+
+.preloader {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: var(--void);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: var(--pad);
+    font-family: var(--mono);
+}
+
+.preloader__name {
+    position: absolute;
+    top: var(--pad);
+    left: var(--pad);
+    margin: 0;
+    font-size: 0.8125rem;
+    letter-spacing: 0.02em;
+    color: var(--graphite);
+}
+
+.preloader__count {
+    margin: 0 0 1.25rem;
+    /* Tabular figures: without them the counter visibly jitters as the digits
+       change width. */
+    font-variant-numeric: tabular-nums;
+    font-size: clamp(3rem, 12vw, 9rem);
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: var(--bone);
+}
+
+.preloader__bar {
+    height: 1px;
+    background: var(--rule);
+}
+
+.preloader__bar span {
+    display: block;
+    height: 100%;
+    background: var(--bone);
+    transform: scaleX(0);
+    transform-origin: left center;
+}
+
+/* ── custom cursor ─────────────────────────────────────────── */
+
+.cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 34px;
+    height: 34px;
+    border: 1px solid var(--graphite);
+    border-radius: 50%;
+    pointer-events: none; /* must never intercept a click */
+    z-index: 150;
+    opacity: 0;
+    /* Only these two are transitioned. The position is set every frame from
+       JavaScript and must not be transitioned, or it would lag twice. */
+    transition: opacity 0.4s var(--ease), scale 0.4s var(--ease),
+        border-color 0.4s var(--ease);
+    will-change: transform;
+}
+
+.cursor.is-visible {
+    opacity: 1;
+}
+
+.cursor.is-active {
+    scale: 1.6;
+    border-color: var(--signal);
+}
+
+/* ── portrait (signature effect A) ─────────────────────────── */
+
+.portrait {
+    margin: 0 0 2.5rem;
+    /* The photograph is square. Locking the ratio here means the WebGL plane
+       measures the same box whatever the image does. */
+    aspect-ratio: 1 / 1;
+    max-width: 340px;
+}
+
+.portrait img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* Slightly desaturated at rest so the DOM version and the shader version
+       look like the same photograph during the handover. */
+    filter: grayscale(0.7) brightness(0.92);
+}
+
+/* Applied only once the WebGL plane is actually drawing this element. The
+   image stays in the DOM — it owns the layout and the alt text — it simply
+   stops painting. visibility:hidden rather than display:none, because a
+   display:none element has no size and the plane would measure zero. */
+.portrait img.is-webgl {
+    visibility: hidden;
+}
+
+/* ── headline (signature effect B) ─────────────────────────── */
+
+/* Same handover as the portrait: the <h1> keeps the text for search engines
+   and screen readers, and stops painting once the shader takes over. */
+.hero__headline.is-webgl {
+    visibility: hidden;
+}
+
+@media (min-width: 900px) {
+    .portrait {
+        max-width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .preloader {
+        display: none;
+    }
+    /* No shader handover under reduced motion — the plain image and the plain
+       heading are what gets shown. */
+    .portrait img.is-webgl,
+    .hero__headline.is-webgl {
+        visibility: visible;
+    }
+}

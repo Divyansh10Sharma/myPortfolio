@@ -80,19 +80,43 @@ end of Phase 3, once the port has actually happened. Leave it alone until then.
 
 ---
 
+## Assets
+
+### Photograph
+
+`public/divyansh.jpeg` — 1022x1022, 154 KB. Square. Stays crisp up to roughly
+510px displayed on a retina screen; a larger export would be needed to show it
+bigger than that.
+
+Live on the site as of Sprint 3: it is the Overview portrait, and it is the
+subject of signature effect A (the shader plane that warps on hover). The real
+`<img>` stays in the DOM and owns the layout, the alt text and the no-WebGL
+fallback; the shader is drawn over the top and the image is only hidden once
+the texture has actually loaded.
+
+No further images are needed. Sprint 3 is one effect done well, so the project
+screenshots that the old "still missing" list asked for are off the list.
+
+---
+
 ## Still missing — do not invent these
 
 Leave a clearly marked `TODO:` wherever these are needed and tell me. I'll write
 them and add them to this file.
 
-- **Photograph of me.** Coming separately. Until it arrives, leave the space and
-  the layout intact rather than substituting a placeholder image or a shape.
-- **Visual assets for the Phase 3 image planes.** There are no project
-  screenshots anywhere in the old repo. Before Phase 3, tell me exactly what you
-  need — how many images, what aspect ratio, what minimum resolution — and I'll
-  produce them.
-- **Alt text** for every image, once the images exist.
-- **Loader copy.** What the preloader says while it counts.
+- **ALT TEXT FOR THE PHOTOGRAPH — placeholder currently live on the site.**
+  At Divyansh's instruction a stand-in was written so the build could proceed.
+  It currently reads:
+
+  > Divyansh Sharma, photographed straight on against a plain background.
+
+  It sits in `index.html` on the `.portrait img` element, flagged with a
+  comment. **It is a guess. It has not been checked against the actual
+  photograph.** Replace before launch — the alt text on a photograph of a
+  person is a description of that person, and it is not Claude's to invent.
+- **Alt text** for any other image added later.
+- **Loader copy.** The preloader currently shows the name and a counter and no
+  sentence. If it should say something, write it here.
 - **OG image.** The existing `og.png` was rendered in the old light palette and
   will look wrong against a black site. It needs re-rendering once the visual
   direction is settled, with a tagline I'll write then.

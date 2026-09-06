@@ -1030,7 +1030,312 @@ const SECTIONS = [
     ["The code", "code", ""],
     ["The tour", "tour", ""],
     ["Go poke it", "poke", ""],
-    ["What usually breaks", "breaks", ""],
+    ["What usually breaks", "breaks", ""],},
+
+{
+title: "Textures — putting a picture on the GPU",
+
+kid: `
+<p>Back to the wall of painters. Each one knows only where they are standing and whatever is
+pinned to the noticeboard. Now you want them to reproduce a photograph.</p>
+<p>So you pin the photograph itself to the noticeboard — a very large pinboard all of them
+can see. And you change the instruction card to say: <em>"work out where you are standing as
+a fraction across the wall, look at the matching spot on the photograph, and paint whatever
+colour you find there."</em></p>
+<p>The painter halfway across and a quarter of the way up looks at the point halfway across
+and a quarter of the way up the photograph, and copies that colour. Two million painters do
+this at once and the photograph appears on the wall.</p>
+<p>Here is where it gets interesting, and it is the whole of both effects on this site.
+Nothing stops a painter looking at the <em>wrong</em> spot on purpose. If every painter looks
+slightly to the left of where they should, the whole picture appears to slide right. If
+painters near the middle look further off than painters at the edges, the picture appears to
+bulge. Nobody moved. Every painter simply lied about where to look.</p>
+`,
+
+why: `
+<p>Both signature effects are that lie. The photograph warping toward your pointer and the
+headline bowing as you scroll are the same technique with different rules for how far to look
+away.</p>
+<p>It is also why the headline had to become a picture at all: WebGL cannot draw text, so
+JavaScript paints the words onto an ordinary 2D canvas and hands that over as the
+photograph.</p>
+`,
+
+translation: `
+<table>
+<tr><td>The photograph on the pinboard</td><td>a <strong>texture</strong></td></tr>
+<tr><td>Looking up a spot on it</td><td><code>texture2D(uTexture, uv)</code> — a <strong>sample</strong></td></tr>
+<tr><td>Which spot to look at</td><td>the <strong>UV</strong> you pass in, 0–1</td></tr>
+<tr><td>Lying about where to look</td><td><strong>UV distortion</strong> — every warp effect ever</td></tr>
+<tr><td>Text drawn to a canvas first</td><td>a <strong>canvas texture</strong></td></tr>
+</table>
+<p>A texture is uploaded to the graphics card once and lives there. That is why it must be
+disposed by hand: our photograph is 1022x1022, and on the GPU that is roughly
+<strong>4MB</strong>, held until something explicitly releases it.</p>
+`,
+
+code: `
+<p>The distortion, from <span class="file">src/shaders/photo.frag</span>:</p>
+<pre><code><span class="c">// Direction from the pointer to this pixel, and how strongly it</span>
+<span class="c">// should be affected: 1 at the pointer, fading to 0 half a plane away.</span>
+vec2  dir  = normalize(uv - uMouse + vec2(0.0001));
+float pull = smoothstep(0.55, 0.0, distance(uv, uMouse)) * uHover;
+
+<span class="c">// The lie. Look TOWARD the pointer, so the image swells out from</span>
+<span class="c">// under it. Nothing moved: we changed where to look.</span>
+uv -= dir * pull * 0.09;</code></pre>
+<p>And the chromatic aberration, which is three lies instead of one:</p>
+<pre><code><span class="c">// Sample the three colour channels from three different places.</span>
+<span class="c">// Real lenses do this because glass bends red and blue differently.</span>
+float r = texture2D(uTexture, uv + dir * aberration).r;
+float g = texture2D(uTexture, uv).g;
+float b = texture2D(uTexture, uv - dir * aberration).b;</code></pre>
+<p>That epsilon in <code>normalize(uv - uMouse + vec2(0.0001))</code> is not decoration.
+Exactly at the pointer <code>uv - uMouse</code> is zero, and normalising a zero-length vector
+divides by zero. The result renders as a black speck that follows your cursor.</p>
+`,
+
+tour: `
+<p>Read <span class="file">photo.frag</span> as: how far am I from the pointer, which way,
+shift my lookup by that much, sample three times, desaturate what comes back. The reveal wipe
+at the bottom is separate and can be skimmed.</p>
+<p>In <span class="file">TextPlane.js</span> the interesting method is <code>paint()</code>,
+which reads the real <code>&lt;h1&gt;</code>'s computed font, weight and letter-spacing and
+redraws the words into a canvas. Reading the computed style rather than hardcoding it is what
+stops the painted copy drifting away from the CSS.</p>
+`,
+
+poke: `
+<ol class="poke">
+<li>In <span class="file">src/shaders/photo.frag</span>, change <code>pull * 0.09</code> to
+<code>pull * 0.4</code>. Hovering now sucks the photograph into a whirlpool.
+<code>0.0</code> switches the warp off entirely while leaving the colour shift — proof that
+one number is the whole effect.</li>
+<li>Change <code>aberration = pull * 0.008</code> to <code>pull * 0.06</code>. The colour
+fringing becomes a 3D-movie effect. The real value is deliberately just at the edge of
+noticeable.</li>
+<li>In <span class="file">src/shaders/text.frag</span>, change <code>uVelocity * 0.14</code>
+to <code>uVelocity * 0.6</code> and scroll hard. The headline tears itself apart. Then try
+<code>0.02</code> for a version so subtle you have to look for it.</li>
+<li>Still in <span class="file">text.frag</span>, replace <code>sin(vUv.y * 3.14159)</code>
+with <code>1.0</code>. The bow becomes a flat slide — the whole block shifts sideways instead
+of bending. That one <code>sin</code> is what makes it read as a physical sheet.</li>
+</ol>
+`,
+
+breaks: `
+<ul>
+<li><strong>A black rectangle where the image should be.</strong> The texture has not
+finished loading. Textures arrive asynchronously and the shader runs regardless — which is
+why <span class="file">PhotoPlane.js</span> keeps the real <code>&lt;img&gt;</code> visible
+until the texture is genuinely in.</li>
+<li><strong>The photograph looks washed out.</strong> Missing
+<code>texture.colorSpace = SRGBColorSpace</code>. The file is already sRGB-encoded and
+without that line Three treats it as linear.</li>
+<li><strong>Black speckles at the pointer.</strong> Normalising a zero-length vector. Add a
+small epsilon.</li>
+<li><strong>Edges smearing when the distortion is large.</strong> The lookup has been pushed
+outside 0–1 and the texture is repeating or clamping. Either clamp the UVs yourself or keep
+the distortion small enough not to reach the edge.</li>
+</ul>
+`
+},
+
+{
+title: "Getting WebGL to line up with the DOM",
+
+kid: `
+<p>Two people are describing seats in the same cinema, and each has brought their own way of
+counting.</p>
+<p>The usher counts from the top-left corner of a seating plan: three rows down, five seats
+across. Down is a bigger number.</p>
+<p>The projectionist measures from the exact centre of the screen: so many metres left or
+right, so many metres up or down. Up is a bigger number, and half the numbers are
+negative.</p>
+<p>Neither is wrong. But if the projectionist follows the usher's directions without
+translating, the spotlight lands in completely the wrong place — too far down, and mirrored
+vertically.</p>
+<p>The translation is two steps, and only two. Move the starting corner to the middle. Flip
+the direction of down. Do those and the two descriptions agree perfectly, forever.</p>
+`,
+
+why: `
+<p>Both signature effects need a shader drawn exactly on top of a real DOM element — not
+approximately, exactly, or the swap between the DOM version and the WebGL version shows as a
+jump.</p>
+<p>This is the piece that makes a WebGL site feel like a website rather than a canvas demo
+sitting in a page.</p>
+`,
+
+translation: `
+<table>
+<tr><td>The usher's seating plan</td><td><strong>DOM coordinates</strong>: (0,0) top-left, y grows down</td></tr>
+<tr><td>The projectionist's metres</td><td><strong>WebGL world space</strong>: (0,0) centre, y grows up</td></tr>
+<tr><td>Reading a seat number off the plan</td><td><code>getBoundingClientRect()</code></td></tr>
+<tr><td>Move the corner to the middle</td><td>subtract half the viewport</td></tr>
+<tr><td>Flip which way is down</td><td>negate y</td></tr>
+</table>
+<p>The one decision that makes all of this easy: our orthographic camera is measured
+<strong>in CSS pixels</strong>. One world unit is one pixel. A 340px-wide element becomes a
+340-unit-wide plane, and no scale factor has to be carried around.</p>
+`,
+
+code: `
+<p>The entire translation, from <span class="file">src/webgl/DomPlane.js</span>:</p>
+<pre><code>const centreX = this.bounds.left + this.bounds.width  / 2;
+const centreY = screenTop         + this.bounds.height / 2;
+
+<span class="c">// Move the origin to the middle of the screen, then flip y.</span>
+<span class="c">// That minus sign is the entire difference between the two systems.</span>
+this.mesh.position.x =  centreX - viewportWidth  / 2;
+this.mesh.position.y = -centreY + viewportHeight / 2;</code></pre>
+<p>And the performance decision that matters more than it looks:</p>
+<pre><code><span class="c">// Store the position relative to the DOCUMENT, not the viewport.</span>
+<span class="c">// The viewport position changes on every scroll; the document</span>
+<span class="c">// position only changes when the layout does.</span>
+this.bounds.docTop = rect.top + scrollY;</code></pre>
+<p><code>getBoundingClientRect()</code> forces the browser to recalculate layout. Calling it
+sixty times a second inside a render loop is one of the most reliable ways to make a smooth
+site stutter. So we measure on load and on resize only, then do arithmetic every frame.</p>
+`,
+
+tour: `
+<p><span class="file">DomPlane.js</span> splits into exactly two halves and the split is the
+point. <code>measure()</code> touches the DOM and runs rarely. <code>update()</code> touches
+nothing and runs every frame. Any time you see a WebGL site stutter while scrolling, it is
+usually because somebody put the first kind of work in the second kind of place.</p>
+<p>The plane is built 1x1 and scaled to the element's size, so a resize is a scale change
+rather than a new geometry. Rebuilding geometry on every resize is a classic way to leak GPU
+memory.</p>
+`,
+
+poke: `
+<ol class="poke">
+<li>In <span class="file">DomPlane.js</span>, delete the minus sign so it reads
+<code>this.mesh.position.y = centreY - viewportHeight / 2;</code>. The photograph flies to the
+opposite side of the screen and scrolls the wrong way. That is what forgetting to flip y looks
+like, and now you will recognise it.</li>
+<li>Move the <code>getBoundingClientRect()</code> call from <code>measure()</code> into
+<code>update()</code> so it runs every frame. With two planes you may not see a difference —
+open devtools → Performance, record a scroll, and look for purple layout bars on every single
+frame. That is the cost, and it scales with how many planes you have.</li>
+<li>In <span class="file">Stage.js</span>, comment out the <code>this.refresh()</code> call
+inside <code>#onResize</code>. Resize the window: the planes stay where they were and drift
+away from their elements. That one line is what keeps them married.</li>
+</ol>
+`,
+
+breaks: `
+<ul>
+<li><strong>The plane is in the right place but the wrong size.</strong> Almost always device
+pixel ratio: <code>getBoundingClientRect()</code> returns CSS pixels, and mixing those with
+device pixels gives a plane that is right on one machine and wrong on a retina screen.</li>
+<li><strong>Everything drifts as you scroll.</strong> Viewport-relative measurements cached
+and never updated. Store document-relative positions instead.</li>
+<li><strong>Correct on load, wrong after a resize.</strong> No re-measure. Layout changed; the
+numbers did not.</li>
+<li><strong>Everything is upside down.</strong> The y flip. It is always the y flip.</li>
+</ul>
+`
+},
+
+{
+title: "The loading screen and the cursor",
+
+kid: `
+<p><strong>The loading screen.</strong> If you hand someone a sealed box and say nothing,
+after four seconds they assume it is empty. If you say "nearly there — about four seconds",
+they wait happily. The wait is identical. The difference is entirely whether anything is
+telling them it will end.</p>
+<p>The dishonest version is a bar that races to nearly full and then sits there, because it
+was never watching anything — it was just an animation. People have learned to distrust that.
+Ours counts two real things: the fonts arriving, and the photograph arriving. When it says 50
+it means one of the two is genuinely in.</p>
+<p><strong>The cursor.</strong> Imagine a balloon on a short string tied to your finger. Move
+your finger and the balloon does not arrive instantly — it swings after you and settles a
+moment later. That tiny delay is the only reason it feels like a physical object rather than a
+shape glued to the screen.</p>
+`,
+
+why: `
+<p>The opening of this site waits on real assets: the headline cannot be painted into its
+canvas until the webfont has loaded, and the photograph cannot warp until its texture is on
+the GPU. Without a loading state the visitor watches an empty black page during that.</p>
+<p>The cursor ring is the cheapest possible piece of "this site is made of physical things" —
+one lerp and a class toggle.</p>
+`,
+
+translation: `
+<table>
+<tr><td>Watching real things arrive</td><td><code>document.fonts.ready</code>, texture load callbacks</td></tr>
+<tr><td>The counter easing rather than jumping</td><td>a <strong>lerp</strong> again — same idea as page 3</td></tr>
+<tr><td>The balloon on a string</td><td>the cursor lerping toward the pointer</td></tr>
+<tr><td>Growing over links</td><td><code>closest()</code> hit-testing, done by the browser</td></tr>
+<tr><td>"Give up and show the page anyway"</td><td>a <strong>timeout ceiling</strong></td></tr>
+</table>
+`,
+
+code: `
+<p>From <span class="file">src/preloader.js</span> — the eased counter:</p>
+<pre><code>displayed += (target - displayed) * 0.08;
+
+<span class="c">// 0.99, not 1: an eased value approaches its target without ever</span>
+<span class="c">// exactly reaching it, so waiting for equality waits forever.</span>
+if (target &gt;= 1 &amp;&amp; displayed &gt; 0.99) finish();</code></pre>
+<p>And from <span class="file">src/main.js</span>, the line that matters most:</p>
+<pre><code><span class="c">// A hard ceiling. If a font or the photograph never arrives — dead</span>
+<span class="c">// CDN, flaky connection — the visitor must not be left staring at</span>
+<span class="c">// a counter. Four seconds, then we go regardless.</span>
+setTimeout(() =&gt; preloader.setProgress(1), 4000);</code></pre>
+<p>The cursor, from <span class="file">src/cursor.js</span>:</p>
+<pre><code>x += (targetX - x) * LERP;   <span class="c">// 0.16 — the balloon's string length</span>
+
+<span class="c">// translate3d, not left/top: transforms are handled by the</span>
+<span class="c">// compositor and never trigger layout. Animating left/top sixty</span>
+<span class="c">// times a second re-lays-out the page sixty times a second.</span>
+ring.style.transform = "translate3d(" + x + "px, " + y + "px, 0)";</code></pre>
+`,
+
+tour: `
+<p>Three things in the preloader are worth keeping. Progress can never go backwards. There is
+a timeout so it always ends. And the panel is <em>removed from the DOM</em> when done, not
+just faded — a transparent full-screen overlay left in place keeps swallowing every click on
+the page, and that bug is invisible until someone tells you nothing works.</p>
+<p>The cursor keeps the real system cursor visible. Hiding it is the fashionable choice and a
+genuinely bad one: people lose track of where they are pointing. The ring is an addition, not
+a replacement.</p>
+`,
+
+poke: `
+<ol class="poke">
+<li>In <span class="file">src/cursor.js</span>, change <code>LERP</code> from
+<code>0.16</code> to <code>1.0</code>. The ring locks rigidly to the pointer and instantly
+looks like a cheap CSS trick. Try <code>0.04</code> — now it lags so far behind it feels
+broken. The window between "glued on" and "broken" is narrower than you would expect.</li>
+<li>In devtools → Network, set throttling to "Slow 3G" and reload. The counter genuinely
+crawls, because it is tracking real downloads. Watch it stall and then jump when the
+photograph lands.</li>
+<li>In <span class="file">src/main.js</span>, change the timeout ceiling from
+<code>4000</code> to <code>500</code>. The loading screen now leaves before the assets are
+ready and you see the headline pop in late — which is exactly the trade-off that number is
+balancing.</li>
+</ol>
+`,
+
+breaks: `
+<ul>
+<li><strong>The loading screen never leaves.</strong> Waiting for a resource that failed, or
+waiting for an eased value to exactly equal its target. Always have a ceiling and always
+compare against a threshold.</li>
+<li><strong>The page loads but nothing is clickable.</strong> The overlay faded to transparent
+and stayed in the DOM. Remove it, or set <code>pointer-events: none</code>.</li>
+<li><strong>The cursor ring blocks clicks.</strong> Same cause, smaller element — it needs
+<code>pointer-events: none</code> too.</li>
+<li><strong>The ring animates in from the corner on first move.</strong> Its starting position
+was never set to the pointer. Jump it there the first time, then lerp after that.</li>
+</ul>
+`
+
 ];
 
 const pageEl = document.getElementById("page");

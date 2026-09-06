@@ -57,6 +57,15 @@
         </style>
     </head>
     <body>
+        <!-- Designed loading state. Removed from the DOM entirely once done, so
+             it cannot keep swallowing clicks. Static markup rather than
+             JavaScript-generated, so it paints on the very first frame. -->
+        <div class="preloader">
+            <p class="preloader__name">Divyansh Sharma</p>
+            <p class="preloader__count">000</p>
+            <div class="preloader__bar"><span></span></div>
+        </div>
+
         <!-- The shader background. aria-hidden because it is pure decoration —
              a screen reader has nothing to say about a gradient. If WebGL fails,
              main.js removes it and the CSS background underneath is the same
@@ -147,6 +156,25 @@
                         </p>
                     </div>
                     <aside class="col-side reveal">
+                        <!-- SIGNATURE EFFECT A — the photograph as a shader
+                             plane. The <img> is the real element: it owns the
+                             layout, the alt text and the no-WebGL fallback. The
+                             WebGL plane is drawn on top of it and the image is
+                             only hidden once the texture has actually loaded.
+
+                             PLACEHOLDER ALT TEXT — written by Claude, not by
+                             Divyansh. Must be replaced before launch. Tracked
+                             in CONTENT.md. -->
+                        <figure class="portrait">
+                            <img
+                                src="/divyansh.jpeg"
+                                alt="Divyansh Sharma, photographed straight on against a plain background."
+                                width="1022"
+                                height="1022"
+                                decoding="async"
+                            />
+                        </figure>
+
                         <p class="label">Certification</p>
                         <p class="side__item">Coding Ninjas C++</p>
                         <p class="side__meta">All India Rank 493 · Top 5%</p>
