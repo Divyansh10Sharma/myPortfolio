@@ -92,13 +92,13 @@ export const overview = {
         date: "Aug 2023",
     },
     /**
-     * PLACEHOLDER ALT TEXT — written by Claude, not by Divyansh, at his
-     * instruction so the build could proceed. It is a guess: the photograph has
-     * never been seen. Tracked in CONTENT.md. Replace before this is defended
-     * as finished work.
+     * What a screen reader reads aloud in place of the photograph, and what
+     * appears if the image fails to load. Written from the photograph itself:
+     * it names the subject, says what he is doing, and places the setting,
+     * rather than cataloguing appearance.
      */
     portraitAlt:
-        "Divyansh Sharma, photographed straight on against a plain background.",
+        "Divyansh Sharma, smiling over his shoulder at the camera, leaning on a railing above a floodlit cricket ground at night.",
 } as const;
 
 export const systemsIntro =
