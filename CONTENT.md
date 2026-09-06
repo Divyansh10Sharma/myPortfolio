@@ -72,6 +72,30 @@ detail to that entry from any source.
 
 ---
 
+## Closing quote
+
+Supplied by Divyansh in chat on 2026-09-06 and recorded here so it survives a
+context reset. Sits above the footer, after Contact, as a sign-off.
+
+```
+“Whatever it is, we’re gonna figure it out. It’s gonna happen. How? I don’t
+know. But it’s gonna happen.”
+
+— Tom Cruise
+```
+
+Notes:
+- **The attribution has not been verified.** Divyansh reported it as something
+  Tom Cruise said recently; Claude has no way to confirm the wording, the date
+  or the source. Check it before this is in front of recruiters — a misquoted
+  public figure on a personal site is a small, avoidable own goal.
+- Attribution kept deliberately. These are someone else’s exact words, and
+  running them unattributed would read as passing them off. If the quote is
+  wanted without a name, rewrite the sentiment in Divyansh’s own words instead
+  of stripping the credit.
+
+---
+
 ## Section headings
 
 Keep the old ones. `Systems I own`, `Where I've worked`, `Side projects`, the
