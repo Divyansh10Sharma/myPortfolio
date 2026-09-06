@@ -129,6 +129,17 @@ the texture has actually loaded.
 No further images are needed. Sprint 3 is one effect done well, so the project
 screenshots that the old "still missing" list asked for are off the list.
 
+**Alt text** (resolved 2026-09-06):
+
+```
+Divyansh Sharma, smiling over his shoulder at the camera, leaning on a railing
+above a floodlit cricket ground at night.
+```
+
+Written from the photograph itself, replacing an earlier placeholder that was
+wrong on both counts — it claimed a straight-on portrait against a plain
+background. Divyansh should still sanity-check it, since it describes him.
+
 ---
 
 ## Still missing — do not invent these
@@ -136,16 +147,6 @@ screenshots that the old "still missing" list asked for are off the list.
 Leave a clearly marked `TODO:` wherever these are needed and tell me. I'll write
 them and add them to this file.
 
-- **ALT TEXT FOR THE PHOTOGRAPH — placeholder currently live on the site.**
-  At Divyansh's instruction a stand-in was written so the build could proceed.
-  It currently reads:
-
-  > Divyansh Sharma, photographed straight on against a plain background.
-
-  It sits in `index.html` on the `.portrait img` element, flagged with a
-  comment. **It is a guess. It has not been checked against the actual
-  photograph.** Replace before launch — the alt text on a photograph of a
-  person is a description of that person, and it is not Claude's to invent.
 - **Alt text** for any other image added later.
 - **Loader copy.** The preloader currently shows the name and a counter and no
   sentence. If it should say something, write it here.
