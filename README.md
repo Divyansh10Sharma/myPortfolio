@@ -143,3 +143,16 @@ invented; anything missing is tracked as an explicit `TODO` in `CONTENT.md`.
 
 > **Outstanding:** the photograph's alt text is currently a placeholder written by Claude
 > and must be replaced before launch. See `CONTENT.md`.
+
+## Deploying
+
+Push to `main`. Vercel is connected to this repo and builds every push.
+
+```bash
+git add .
+git commit -m "your message"
+git push
+```
+
+The previous version of this site (a light, spec-sheet layout in React and
+Tailwind) is preserved on the `v1-spec-sheet` branch.
