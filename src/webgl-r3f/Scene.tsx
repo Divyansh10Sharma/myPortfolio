@@ -4,6 +4,7 @@ import { Background } from "./Background";
 import { PhotoPlane } from "./PhotoPlane";
 import { TextPlane } from "./TextPlane";
 import { PostProcessing } from "./PostProcessing";
+import { DepthField } from "./DepthField";
 import type { Quality } from "../hooks/useQuality";
 
 interface SceneProps {
@@ -66,10 +67,25 @@ export function Scene({
             }}
             aria-hidden="true"
         >
-            {/* When the post pass is running it lays grain over the whole
-                image, so the background must stop drawing its own or the two
-                stack up and the page looks like static. */}
-            <Background quality={quality} grain={usePost ? 0 : quality.grain} />
+            {/* Two backgrounds, one at a time.
+
+                With post-processing on, the depth field takes over: it draws
+                the same gradient as a backdrop and scatters marks through real
+                perspective in front of it. It can only work when something is
+                rendering it, and PostProcessing is that something.
+
+                With post off — weak devices, small screens, reduced motion —
+                we fall back to the flat gradient in the main scene. That is a
+                deliberate degradation rather than a broken one: the page still
+                has its atmosphere, it just has no depth.
+
+                Grain follows the same split. Whichever is drawing owns it, and
+                it is never applied twice. */}
+            {usePost ? (
+                <DepthField grain={0} />
+            ) : (
+                <Background quality={quality} grain={quality.grain} />
+            )}
 
             {/* Suspense catches the texture load. Until it resolves, nothing
                 inside renders — and the real <img> underneath is still visible,

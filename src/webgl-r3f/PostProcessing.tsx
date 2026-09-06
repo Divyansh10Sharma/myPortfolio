@@ -13,6 +13,7 @@ import {
 import vertexShader from "../shaders/plane.vert?raw";
 import fragmentShader from "../shaders/post.frag?raw";
 import { scrollState } from "../state/scroll";
+import { backgroundLayer } from "../state/layers";
 
 interface PostProcessingProps {
     grain: number;
@@ -116,9 +117,24 @@ export function PostProcessing({ grain, aberration }: PostProcessingProps) {
         post.uniforms.uTime.value += delta;
         post.uniforms.uVelocity.value = scrollState.velocity / 55;
 
-        // Pass one: the real scene, onto the blank sheet.
         gl.setRenderTarget(post.target);
-        gl.render(scene, camera);
+
+        // Pass one, part one: anything that registered itself as a background
+        // layer. The depth field lives here — it has its own perspective
+        // camera, which the main orthographic one could never provide.
+        if (backgroundLayer.render) {
+            gl.clear();
+            backgroundLayer.render(gl);
+
+            // The main scene must now draw ON TOP of that rather than wiping
+            // it. Restored immediately after, because leaving autoClear off
+            // globally makes every later frame smear over the last.
+            gl.autoClear = false;
+            gl.render(scene, camera);
+            gl.autoClear = true;
+        } else {
+            gl.render(scene, camera);
+        }
 
         // Pass two: the sheet, onto the screen, through the post shader.
         //

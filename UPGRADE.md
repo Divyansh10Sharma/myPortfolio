@@ -98,18 +98,34 @@ respond to one shared input rather than two systems that happen to agree.
 
 ---
 
-### 4. Depth in the background
+### 4. Depth in the background — ✅ DONE
 
 Replace the flat gradient with something that has real perspective: layered
 planes or a lightly displaced mesh, drifting with the pointer and with scroll,
 under a perspective camera rather than the current orthographic one.
 
-**Why:** the background is currently 2D pretending to be atmospheric. Depth is
-most of what makes Active Theory's backgrounds feel like spaces.
-**Effort:** ~3–4h. **Cost:** real, and it stacks with the post pass. Desktop
-only.
-**Risk:** the largest visual change in this list. Easy to make it noisy. It has
-to stay calm.
+**Done:** `webgl-r3f/DepthField.tsx`, `shaders/depth.vert`, `shaders/depth.frag`,
+`state/layers.ts`. 260 square marks scattered through a volume, under a real
+perspective camera that leans toward the pointer.
+
+**The constraint that shaped it:** the canvas camera is orthographic and has to
+stay that way, because `useDomPlane` relies on one world unit being one CSS
+pixel to align the photograph and headline with their DOM elements. Perspective
+would break that mapping. So the depth field brings its own scene and camera and
+registers through `state/layers.ts` to be drawn first; PostProcessing, which
+already owns the render loop, calls it before rendering the main scene with
+`autoClear` off.
+
+**Why the camera moves and not the marks:** moving the camera gives real
+parallax for free — near marks slide further than far ones because that is what
+perspective does. Moving the marks would slide them all equally and the depth
+would collapse.
+
+**Fallback:** with post off (weak, small, reduced motion) the flat gradient
+comes back. Atmosphere without depth, rather than a hole.
+
+Square marks, not dots, and no colour — the motif is carried over from the old
+site's hero field.
 
 ---
 
