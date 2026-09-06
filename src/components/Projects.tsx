@@ -1,11 +1,12 @@
 import { projects } from "../data/content";
 import { Section } from "./Section";
 import { Reveal } from "./Reveal";
+import { SplitReveal } from "./SplitReveal";
 
 export function Projects() {
     return (
         <Section id="projects" index="04" label="Projects">
-            <Reveal as="h2">Side projects</Reveal>
+            <SplitReveal as="h2">Side projects</SplitReveal>
 
             <div className="list">
                 {projects.map((project) => (

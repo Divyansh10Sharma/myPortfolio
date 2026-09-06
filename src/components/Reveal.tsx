@@ -17,6 +17,11 @@ interface RevealProps {
     className?: string;
     /** Seconds to wait before starting, for staggering siblings. */
     delay?: number;
+    /**
+     * Hold the animation back. The hero uses this so its content does not play
+     * out behind the loading screen and finish before anyone has seen it.
+     */
+    enabled?: boolean;
 }
 
 /**
@@ -35,6 +40,7 @@ export function Reveal({
     as: Tag = "div",
     className,
     delay = 0,
+    enabled = true,
 }: RevealProps) {
     const ref = useRef<HTMLElement>(null);
     const reducedMotion = useReducedMotion();
@@ -42,6 +48,11 @@ export function Reveal({
     useEffect(() => {
         const element = ref.current;
         if (!element) return;
+
+        // Not our turn yet. The element stays hidden — which is safe, because
+        // whatever set enabled=false is responsible for flipping it back, and
+        // the failsafe in App shows anything still transparent regardless.
+        if (!enabled) return;
 
         // Reduced motion: visible immediately, no animation at all. Note that
         // it is shown rather than left hidden — the content is not optional.
@@ -74,7 +85,7 @@ export function Reveal({
             tween.scrollTrigger?.kill();
             tween.kill();
         };
-    }, [reducedMotion, delay]);
+    }, [reducedMotion, delay, enabled]);
 
     /**
      * Rendering "whatever tag we were told to" is awkward to type. Written as

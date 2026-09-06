@@ -1,11 +1,12 @@
 import { work } from "../data/content";
 import { Section } from "./Section";
 import { Reveal } from "./Reveal";
+import { SplitReveal } from "./SplitReveal";
 
 export function Work() {
     return (
         <Section id="work" index="03" label="Work">
-            <Reveal as="h2">Where I've worked</Reveal>
+            <SplitReveal as="h2">Where I've worked</SplitReveal>
 
             <div className="list">
                 {work.map((role) => (

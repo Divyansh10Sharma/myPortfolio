@@ -14,6 +14,8 @@ interface SceneProps {
     headline: HTMLElement | null;
     portrait: HTMLImageElement | null;
     portraitSrc: string;
+    /** The loading screen has begun to lift. */
+    ready: boolean;
 }
 
 /**
@@ -34,6 +36,7 @@ export function Scene({
     headline,
     portrait,
     portraitSrc,
+    ready,
 }: SceneProps) {
     // A touch screen has no pointer to warp the photograph toward, and a narrow
     // viewport has no room for the headline to bow in. On those devices the
@@ -99,7 +102,11 @@ export function Scene({
                     <PhotoPlane element={portrait} src={portraitSrc} />
                 )}
                 {showEffects && headline && (
-                    <TextPlane element={headline} pixelRatio={quality.pixelRatio} />
+                    <TextPlane
+                        element={headline}
+                        pixelRatio={quality.pixelRatio}
+                        ready={ready}
+                    />
                 )}
             </Suspense>
         </Canvas>

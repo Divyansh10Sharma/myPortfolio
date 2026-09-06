@@ -11,10 +11,13 @@ import { Reveal } from "./Reveal";
  * document.querySelector: the parent owns the reference, the child just exposes
  * it, and there is no global lookup that can silently match the wrong thing.
  */
-export const Hero = forwardRef<HTMLHeadingElement>(function Hero(_props, ref) {
+export const Hero = forwardRef<HTMLHeadingElement, { ready: boolean }>(function Hero(
+    { ready },
+    ref
+) {
     return (
         <section className="hero">
-            <Reveal as="p" className="hero__meta">
+            <Reveal as="p" className="hero__meta" enabled={ready}>
                 <span className="dot" aria-hidden="true" />
                 {profile.availability}
             </Reveal>
@@ -25,11 +28,11 @@ export const Hero = forwardRef<HTMLHeadingElement>(function Hero(_props, ref) {
                 {hero.headline}
             </h1>
 
-            <Reveal as="p" className="hero__sub" delay={0.1}>
+            <Reveal as="p" className="hero__sub" delay={0.1} enabled={ready}>
                 {hero.sub}
             </Reveal>
 
-            <Reveal as="dl" className="stats" delay={0.2}>
+            <Reveal as="dl" className="stats" delay={0.2} enabled={ready}>
                 {stats.map((stat) => (
                     <div className="stat" key={stat.label}>
                         <dd>{stat.value}</dd>

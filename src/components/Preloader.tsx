@@ -14,7 +14,22 @@ import { profile } from "../data/content";
  * The progress stays honest — it reflects real downloads, not an animation
  * pretending to be one.
  */
-export function Preloader({ onDone }: { onDone: () => void }) {
+interface PreloaderProps {
+    /**
+     * Fired the instant the panel begins to lift, NOT when it finishes.
+     *
+     * This is the whole handoff. If the hero only starts once the loader is
+     * gone, the two are separate events and the page reads as "loading screen,
+     * then site". Starting the hero while the panel is still travelling makes
+     * it look like the panel is pulling the page up behind it — one movement
+     * instead of two.
+     */
+    onReveal: () => void;
+    /** Fired when the panel is gone and can be unmounted. */
+    onDone: () => void;
+}
+
+export function Preloader({ onReveal, onDone }: PreloaderProps) {
     const { progress, active } = useLoadingProgress();
 
     const rootRef = useRef<HTMLDivElement>(null);
@@ -53,7 +68,18 @@ export function Preloader({ onDone }: { onDone: () => void }) {
             })
                 .to(countRef.current, { opacity: 0, duration: 0.4, ease: "power2.out" })
                 .to(barRef.current, { scaleX: 1, duration: 0.35, ease: "power2.inOut" }, 0)
-                .to(rootRef.current, { yPercent: -100, duration: 1.1, ease: "expo.inOut" }, 0.35);
+                .to(
+                    rootRef.current,
+                    {
+                        yPercent: -100,
+                        duration: 1.1,
+                        ease: "expo.inOut",
+                        // The handoff. Everything below the panel starts moving
+                        // now, while the panel is still on its way out.
+                        onStart: onReveal,
+                    },
+                    0.35
+                );
         };
 
         const tick = () => {
@@ -81,7 +107,7 @@ export function Preloader({ onDone }: { onDone: () => void }) {
             gsap.ticker.remove(tick);
             window.clearTimeout(ceiling);
         };
-    }, [finished, onDone]);
+    }, [finished, onDone, onReveal]);
 
     // Nothing is loading and nothing ever was — no textures on this device, for
     // instance. Let the ceiling handle it rather than hanging at zero.

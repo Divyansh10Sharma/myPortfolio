@@ -10,6 +10,8 @@ interface TextPlaneProps {
     /** The real <h1>. It stays the readable heading for search and screen readers. */
     element: HTMLElement;
     pixelRatio: number;
+    /** Hold the reveal until the loading screen begins to lift. */
+    ready: boolean;
 }
 
 /**
@@ -23,7 +25,7 @@ interface TextPlaneProps {
  * It bows as you scroll: held at the top and bottom edges, dragging in the
  * middle, the way a sheet on a line bows when you tug the line sideways.
  */
-export function TextPlane({ element, pixelRatio }: TextPlaneProps) {
+export function TextPlane({ element, pixelRatio, ready }: TextPlaneProps) {
     const materialRef = useRef<ShaderMaterial>(null);
     const { meshRef, measure, position } = useDomPlane(element);
 
@@ -180,7 +182,8 @@ export function TextPlane({ element, pixelRatio }: TextPlaneProps) {
         material.uniforms.uVelocity.value = velocity.current;
         material.uniforms.uTime.value += delta;
 
-        if (revealProgress.current < 1) {
+        // The headline rises as part of the handoff, not before it.
+        if (ready && revealProgress.current < 1) {
             revealProgress.current = Math.min(1, revealProgress.current + delta * 0.75);
             // Eased so it decelerates into place instead of stopping dead.
             const t = revealProgress.current;

@@ -148,26 +148,43 @@ Cursor now has three states rather than one: clickable, leaves-the-site
 
 ---
 
-### 6. Text choreography
+### 6. Text choreography — ✅ DONE
 
 Section headings arrive per word or per line with real stagger rather than a
 single fade. Possibly variable-weight animation on the hero.
 
-**Why:** entrances are currently uniform. Studio work varies rhythm to direct
-attention.
-**Effort:** ~2h. **Cost:** nil.
-**Risk:** must not delay reading. Anything gating content on animation is wrong.
+**Done:** `components/SplitReveal.tsx`, applied to every section `h2`.
+SplitText splits the heading into lines, each masked, rising from behind its own
+baseline with 0.08s of stagger.
+
+Headings only. Staggering body copy makes it slower to read for no gain.
+
+Splits after `document.fonts.ready`, because SplitText measures where lines
+break and the fallback face breaks them in the wrong places. Splits while the
+element is still transparent so there is no flash of un-split text, and carries
+a 2.5s failsafe in case fonts never resolve. `split.revert()` on unmount, or the
+injected wrappers outlive the component and React reconciles against DOM it did
+not create.
 
 ---
 
-### 7. Preloader-to-hero handoff
+### 7. Preloader-to-hero handoff — ✅ DONE
 
 Currently the loader wipes away and the hero reveals independently. Make it one
 continuous move: the counter becomes part of the hero's arrival.
 
-**Why:** the first three seconds set the whole impression, and right now they
-are two separate animations that happen to be adjacent.
-**Effort:** ~2h. **Cost:** nil.
+**Done:** the loader now fires `onReveal` the instant the panel *starts*
+lifting, not when it finishes. App splits this into two flags — `ready` (start
+moving) and `loading` (safe to unmount) — and threads `ready` into both the hero
+`Reveal`s and the headline shader.
+
+**The bug this fixes:** hero reveals used ScrollTrigger, the hero is at the top
+of the page, so they fired on mount — behind the loading screen — and were
+finished before anyone saw them. The opening was a loading screen followed by a
+static page.
+
+Now the hero starts moving while the panel is still travelling, so the panel
+appears to pull the page up behind it. One movement instead of two.
 
 ---
 

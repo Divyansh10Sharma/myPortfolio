@@ -2,6 +2,7 @@ import { forwardRef } from "react";
 import { overview } from "../data/content";
 import { Section } from "./Section";
 import { Reveal } from "./Reveal";
+import { SplitReveal } from "./SplitReveal";
 
 /**
  * About, plus the portrait that signature effect A draws over.
@@ -22,7 +23,7 @@ export const Overview = forwardRef<HTMLImageElement>(function Overview(_props, r
         <Section id="overview" index="01" label="Overview" skew={false}>
             <div className="section__grid">
                 <div className="col-main">
-                    <Reveal as="h2">{heading}</Reveal>
+                    <SplitReveal as="h2">{heading}</SplitReveal>
 
                     {paragraphs.map((paragraph, i) => (
                         <Reveal as="p" className="prose" key={i} delay={0.05 * (i + 1)}>

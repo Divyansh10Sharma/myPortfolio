@@ -49,7 +49,23 @@ export default function App() {
 
     const [loading, setLoading] = useState(!reducedMotion);
 
-    const onLoaderDone = useCallback(() => setLoading(false), []);
+    // Two flags, not one, because the handoff has two moments.
+    //
+    //   ready   — the panel has started lifting; everything underneath begins
+    //             to move, while the panel is still travelling
+    //   loading — the panel has finished and can be unmounted
+    //
+    // Under reduced motion there is no panel and no handoff, so the page is
+    // ready immediately.
+    const [ready, setReady] = useState(reducedMotion);
+
+    const onLoaderReveal = useCallback(() => setReady(true), []);
+    const onLoaderDone = useCallback(() => {
+        setLoading(false);
+        // Belt and braces: if the lift somehow never fired its onStart, the
+        // hero must still be released rather than sitting invisible forever.
+        setReady(true);
+    }, []);
 
     /* ── in-page links ─────────────────────────────────────────
        Anchor clicks must go through Lenis, otherwise the browser jumps
@@ -100,7 +116,7 @@ export default function App() {
 
     return (
         <>
-            {loading && <Preloader onDone={onLoaderDone} />}
+            {loading && <Preloader onReveal={onLoaderReveal} onDone={onLoaderDone} />}
 
             <Scene
                 quality={quality}
@@ -108,6 +124,7 @@ export default function App() {
                 headline={headline}
                 portrait={portrait}
                 portraitSrc="/divyansh.webp"
+                ready={ready}
             />
 
             <Cursor />
@@ -120,7 +137,7 @@ export default function App() {
             <Nav />
 
             <main id="top">
-                <Hero ref={setHeadline} />
+                <Hero ref={setHeadline} ready={ready} />
                 <Overview ref={setPortrait} />
                 <Systems />
                 <Work />

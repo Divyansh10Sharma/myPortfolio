@@ -1,6 +1,7 @@
 import { systems, systemsIntro, type System } from "../data/content";
 import { Section } from "./Section";
 import { Reveal } from "./Reveal";
+import { SplitReveal } from "./SplitReveal";
 
 /**
  * One system. Split out as its own component because it has real internal
@@ -43,7 +44,7 @@ function SystemRow({ system }: { system: System }) {
 export function Systems() {
     return (
         <Section id="systems" index="02" label="Systems">
-            <Reveal as="h2">Systems I own</Reveal>
+            <SplitReveal as="h2">Systems I own</SplitReveal>
             <Reveal as="p" className="prose prose--lede" delay={0.05}>
                 {systemsIntro}
             </Reveal>

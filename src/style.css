@@ -856,3 +856,27 @@ h3 {
     border-radius: 4px;
     border-color: var(--bone);
 }
+
+
+/* ── split headings ────────────────────────────────────────────
+   SplitText wraps each line, and with mask:"lines" it adds the
+   overflow-hidden parent that makes a line rise from behind its own baseline
+   rather than fading in. These two rules just make sure the wrappers do not
+   change the layout they were inserted into. */
+
+.split-line {
+    display: block;
+}
+
+/* Headings are transparent until they have been split, so there is never a
+   flash of un-split text. SplitReveal sets opacity to 1 the moment the split
+   is done, and has a 2.5s failsafe in case fonts never resolve. */
+.js .section h2 {
+    opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .js .section h2 {
+        opacity: 1;
+    }
+}

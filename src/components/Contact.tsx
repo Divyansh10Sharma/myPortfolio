@@ -1,11 +1,12 @@
 import { profile } from "../data/content";
 import { Section } from "./Section";
 import { Reveal } from "./Reveal";
+import { SplitReveal } from "./SplitReveal";
 
 export function Contact() {
     return (
         <Section id="contact" index="06" label="Contact">
-            <Reveal as="h2">Open to backend and AI engineering roles</Reveal>
+            <SplitReveal as="h2">Open to backend and AI engineering roles</SplitReveal>
 
             <Reveal delay={0.05}>
                 <a className="email" href={`mailto:${profile.email}`}>
