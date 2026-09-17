@@ -56,7 +56,7 @@ export const profile = {
     github: "https://github.com/Divyansh10Sharma",
     linkedin: "https://www.linkedin.com/in/divyansh-sharma-convivial/",
     resume:
-        "https://drive.google.com/file/d/1MbxOlm460Ac9LdPARNcP_0GITvXLxAs_/view?usp=sharing",
+        "https://drive.google.com/file/d/1hveDpQV4_sckxqVFPWKv_rSCxxbHigXt/view?usp=sharing",
 } as const;
 
 /** CONTENT.md: short on purpose, and the biggest type on the site. */
