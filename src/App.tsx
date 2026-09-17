@@ -5,7 +5,6 @@ import { Scene } from "./webgl-r3f/Scene";
 import { Nav } from "./components/Nav";
 import { Footer } from "./components/Footer";
 import { Preloader } from "./components/Preloader";
-import { Cursor } from "./components/Cursor";
 import { Grain } from "./components/Grain";
 import { PageTransition } from "./components/PageTransition";
 import { Home } from "./pages/Home";
@@ -20,7 +19,7 @@ import { useMagnetic } from "./hooks/useMagnetic";
  * The parent. Owns everything that must survive a navigation.
  *
  * The ordering here is the whole architecture and it is worth reading in one
- * go: the canvas, the cursor and the grain sit OUTSIDE `<BrowserRouter>`, so
+ * go: the canvas and the grain sit OUTSIDE `<BrowserRouter>`, so
  * routing cannot unmount them. That is what lets the WebGL context, its
  * shaders and its compiled programs live across page changes. Put the canvas
  * inside the router and every navigation destroys and rebuilds a WebGL
@@ -104,7 +103,6 @@ export default function App() {
                 ready={ready}
             />
 
-            <Cursor />
             <Grain />
 
             <a className="skip" href="#overview">

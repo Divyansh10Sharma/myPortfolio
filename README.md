@@ -52,7 +52,6 @@ index.html              All content, as real markup
 src/
   main.js               Entry point and motion layer, in execution order
   style.css             Palette, type, layout
-  cursor.js             Pointer ring that lags behind the real cursor
   preloader.js          Loading state with honest progress
   webgl/
     Stage.js            Renderer, scene, camera, the frame loop
@@ -130,8 +129,7 @@ correctness requirement rather than a polish pass.
 ## Accessibility
 
 Real semantic markup, one `<h1>`, a working skip link, visible focus rings, and a
-decorative canvas marked `aria-hidden`. The custom cursor is an addition — the real system
-cursor stays visible, because hiding it makes people lose track of where they are pointing.
+decorative canvas marked `aria-hidden`.
 
 Secondary text and the accent colour were both lightened from the old site's values, which
 were designed for ink on paper and did not clear WCAG AA when inverted onto near-black.

@@ -679,36 +679,6 @@ h3 {
     transform-origin: left center;
 }
 
-/* ── custom cursor ─────────────────────────────────────────── */
-
-.cursor {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 34px;
-    height: 34px;
-    border: 1px solid var(--graphite);
-    border-radius: 50%;
-    pointer-events: none; /* must never intercept a click */
-    z-index: 150;
-    opacity: 0;
-    /* Only these two are transitioned. The position is set every frame from
-       JavaScript and must not be transitioned, or it would lag twice. */
-    transition: opacity 0.4s var(--ease), scale 0.4s var(--ease),
-        border-color 0.4s var(--ease), border-radius 0.4s var(--ease),
-        background-color 0.4s var(--ease);
-    will-change: transform;
-}
-
-.cursor.is-visible {
-    opacity: 1;
-}
-
-.cursor.is-active {
-    scale: 1.6;
-    border-color: var(--signal);
-}
-
 /* ── portrait (signature effect A) ─────────────────────────── */
 
 .portrait {
@@ -846,28 +816,6 @@ h3 {
 }
 
 
-/* ── cursor states ─────────────────────────────────────────────
-   The ring says what kind of thing is under it. Scale alone reads as "this is
-   clickable"; a filled ring for links that leave the site, and a wider, flatter
-   one over a disclosure, say something more specific.
-
-   Note these transition `scale` and `border-radius`, never `transform` — the
-   position is written every frame from JavaScript and transitioning it would
-   make the ring lag twice. */
-
-.cursor.is-external {
-    scale: 1.9;
-    background: color-mix(in srgb, var(--signal) 18%, transparent);
-    border-color: var(--signal);
-}
-
-.cursor.is-expandable {
-    scale: 1.35;
-    border-radius: 4px;
-    border-color: var(--bone);
-}
-
-
 /* ── split headings ────────────────────────────────────────────
    SplitText wraps each line, and with mask:"lines" it adds the
    overflow-hidden parent that makes a line rise from behind its own baseline
@@ -897,8 +845,8 @@ h3 {
    vocabulary as the preloader lifting away, on purpose — one gesture that
    means "the page is changing".
 
-   z-index sits below the preloader and above the cursor: a navigation should
-   cover the cursor ring, but the initial load should cover everything. */
+   z-index sits below the preloader: a navigation covers the page, but the
+   initial load covers everything, including this. */
 
 .transition {
     position: fixed;

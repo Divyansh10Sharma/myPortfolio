@@ -103,7 +103,7 @@ export const overview = {
 } as const;
 
 export const systemsIntro =
-    "Six production systems at Train Rex, each shipped end-to-end — backend, mobile, and the infrastructure in between.";
+    "Seven production systems at Train Rex, each shipped end-to-end — backend, mobile, and the infrastructure in between.";
 
 export const systems: System[] = [
     {
@@ -157,6 +157,17 @@ export const systems: System[] = [
         lead: "Reading from both databases in one request until the old one can be switched off.",
         body: "An incremental migration flattening four-level nested collections into normalised tables with idempotent writes. Uses a strangler-fig read-merge: queries both stores in a single request, deduplicates by composite key, and tags each row with its data origin for debuggability — so reads stay correct throughout the transition.",
         stack: ["PostgreSQL", "Firestore", "Python"],
+    },
+    {
+        // Added 2026-09-17. Unlike S-01 to S-06 this has no entry in the old
+        // site; every figure comes from the verified Train Rex audit (kept in
+        // the gitignored private/ folder) and was measured, not estimated.
+        id: "tooling",
+        index: "S-07",
+        name: "Build tooling migration",
+        lead: "Three-minute builds down to nine seconds, across 663 files Vite refused to read.",
+        body: "Moved the consumer web platform off Create React App onto Vite 8: production builds from about three minutes to 8.6 seconds, dev server start from thirty seconds to 388 milliseconds, first load from 475 to 437 KB gzipped. 663 of 866 source files kept JSX inside .js files, which Vite will not parse, so a pre-transform Babel plugin had to be registered twice — once in the build pipeline and once in the dependency scanner, which runs outside it and would otherwise skip pre-bundling without a word. Alongside it: Jest replaced by Vitest with 41 tests now blocking all three deploy workflows, npm vulnerabilities cut from 116 to 61, and React Compiler adopted with its cost measured rather than assumed — 611 of 945 files memoised for 3.9% more bundle.",
+        stack: ["Vite", "Babel", "Vitest", "React Compiler", "oxlint"],
     },
 ];
 

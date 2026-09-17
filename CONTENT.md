@@ -64,6 +64,13 @@ file. Only the short line is new.
 | **Step reconciliation** | A sensor that only counts since boot, corrected against the cloud every fifty steps. |
 | **Payment reliability** | Three independent layers, because a webhook is not a promise. |
 | **Firestore → PostgreSQL** | Reading from both databases in one request until the old one can be switched off. |
+| **Build tooling migration** | Three-minute builds down to nine seconds, across 663 files Vite refused to read. |
+
+**Build tooling migration (S-07) is new — added 2026-09-17.** It has no entry in
+the old data file, so its long body and stack list were written from the
+verified Train Rex engineering audit (gitignored in `private/`), approved by
+Divyansh in chat. Every number in it was measured in a commit. Nothing from that
+audit about Rexpert, security findings or unfixed gaps may be copied here.
 
 **Rexpert keeps its NDA marker.** Carry over the "Details withheld under NDA"
 label and the restraint that goes with it. The short line above is deliberately

@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 _old-reference/
 .vercel
+
+# Employer source material — internal, never published
+private/
